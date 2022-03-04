@@ -1,0 +1,52 @@
+basic crud operations
+- create a table
+	- primary key (one for now, compsite for strech goal)
+	- data types of columns (primative)
+		- integer
+		- varchar
+		- boolean
+		- numeric
+		- date-time
+	- serial, not null, unique, default
+	- foreign key
+
+- update a table
+	- add foreign keys
+	- change primary key
+
+- remove a table
+	- remove a column
+	
+
+
+
+
+- insert
+	- new row
+- update
+	- whole row (which column plus value to search for)
+- delete
+	- delete row (which column plus value to search for)
+- find
+	- rows (which column plus value to search for)
+	- all
+	- having (Stretch Goal)
+
+- schema creation (if doesn't exist)
+
+annotations
+- table
+	- name
+- column
+	- name
+	- unique
+	- nullable
+	- length (Stretch Goal)
+	- precision
+- id (primary)
+- oneToMany and ManyToOne (foreign key)
+	- column varaible name
+	- table class
+	- cascade
+- ManyToMany
+	
