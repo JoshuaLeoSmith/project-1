@@ -1,37 +1,78 @@
 package com.revature.service;
 
 import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.revature.inspection.ClassInspector;
 
 
 public class ServicesImpl implements IServices {
 
-	
 	@Override
-	public int insert(Object o) {
+	public int insert(Object o, boolean save) {
 		
 		//o.getClass().getDeclaredFields();
 		
-	     
-		Class<?> clazz = o.getClass();
-	    Field field;
-		try {
-			field = clazz.getDeclaredField("username");
-			field.setAccessible(true);
-			
+		List<Field> fields = new LinkedList<Field>();
+		fields = ClassInspector.getColumns(o.getClass());
+		List<Object> fieldValues = new LinkedList<Object>();
+		
+		
+		for(Field f : fields) {
+			f.setAccessible(true);
+			Object val = null;
 			try {
-				Object fieldValue = field.get(o);
-				System.out.println(fieldValue);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
+				val = f.get(o);
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		} //Note, this can throw an exception if the field doesn't exist.
-	    
+			fieldValues.add(val);
+		}
+		
+		System.out.println(fieldValues);
+
+		
+		return -1;
+		// return TableDao.insertIntoTable(fieldValues, save) 
+		// this should return the id of the new row created, or -1 if failed.
+		
+	}
 	
-		return -1; // return what the dao returns
+	
+	@Override
+	public int remove(int id, boolean save) {
+		
+		return -1;
+		// return TableDao.removeFromTable(id) 
+		// this should return the id of the row deleted, or -1 if failed.
+		
+	}
+	
+	@Override
+	public int remove(String where, boolean save) {
+		
+		return -1;
+		// return TableDao.removeFromTable(where) 
+		// this should return the id of the row deleted, or -1 if failed.
+	}
+	     
+	
+	@Override 
+	public int roll() {
+		
+		return -1;
+		// return TableDao.roll()
+		// this should return 1 if successful, -1 if unsuccessful
+		
+	}
+	
+	@Override
+	public int commit() {
+		
+		return -1;
+		// return tableDao.commit()
+		// this should return 1 if successful, -1 if unsuccessful
 	}
 	
 	public static void main(String[] args) {
@@ -39,9 +80,7 @@ public class ServicesImpl implements IServices {
 		
 		TesterClass t = new TesterClass("jls", "pwd", 12.5, 2);
 		
-		
-		
-		s.insert(t);
+		s.insert(t, true);
 		
 		
 	}	
