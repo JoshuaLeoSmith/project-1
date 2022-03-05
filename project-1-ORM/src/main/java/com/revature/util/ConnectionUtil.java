@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-
 import org.apache.log4j.Logger;
 
 public class ConnectionUtil {
@@ -28,7 +27,24 @@ public class ConnectionUtil {
 			logBot.error("Can't read from the properties file");
 			e.printStackTrace();
 		}
-		return "project_onedead";
+		return "public";
+	}
+	
+	
+	public static String getManagement() {	
+		try {
+			Properties prop=new Properties();		
+			prop.load(new FileReader( "src/main/resources/config.properties"));			
+			String schema=prop.getProperty("SchemaManagement");
+			return schema;
+		} catch (FileNotFoundException e) {
+			logBot.error("No file exists for the properties");
+			e.printStackTrace();
+		} catch (IOException e) {
+			logBot.error("Can't read from the properties file");
+			e.printStackTrace();
+		}
+		return "create";
 	}
 	
 	
@@ -59,14 +75,5 @@ public class ConnectionUtil {
 			e.printStackTrace();
 		}		
 		return conn;
-	}
-
-	public static void main(String[] args) {
-		System.out.println(getSchema());		
-		Connection conn =getConnection();
-		System.out.println("Done");
-		
-		
-	}
-	
+	}	
 }
