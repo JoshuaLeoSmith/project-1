@@ -74,16 +74,7 @@ public class ServicesImpl implements IServices {
 		// return tableDao.commit()
 		// this should return 1 if successful, -1 if unsuccessful
 	}
-	
-	public static void main(String[] args) {
-		IServices s = new ServicesImpl();
 		
-		TesterClass t = new TesterClass("jls", "pwd", 12.5, 2);
-		
-		s.insert(t, true);
-		
-		
-	}	
 }
 
 
