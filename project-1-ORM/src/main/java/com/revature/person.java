@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import com.revature.annotations.*;
 
 
-
+@Entity
 public class person {
 
 	@Exclude
@@ -26,16 +26,27 @@ public class person {
 	
 	@Id
 	protected int userID;
+	@Column
 	protected String username;
+	@Column
 	protected String passwordHash;
+	@Column
 	protected int accessLevel; //0=customer, 1=employee, 2=admin
+	@Column
 	protected boolean verified=false;	
+	@Column
 	protected String email;
+	@Column
 	protected String phoneNumber;
+	@Column
 	protected String fName;
+	@Column
 	protected String lName;
+	@Column
 	protected String address;
+	@Column
 	protected LocalDate dob;
+	
 	@Exclude
 	protected List<Account> accounts;
 	
