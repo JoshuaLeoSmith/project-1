@@ -27,7 +27,6 @@ public class ForeignKeyField {
 	
 	// return the TYPE of the field that's annotated
 	public Class<?> getType() {
-		
 		return field.getType(); // think about how we could this to our advantage when we (as the ORM framework developers
 							    // are crafting a way in which we can  set up a way to determine the RDBMS type for the column
 	}
