@@ -2,7 +2,7 @@ package com.revature.service;
 
 import java.io.Serializable;
 import java.util.Objects;
-import com.revature.annotations.Column;
+import com.revature.annotations.*;
 
 
 public class TesterClass implements Serializable {
