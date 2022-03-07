@@ -122,4 +122,26 @@ public class MetaModel<T> {
 	public String getClassName() {
 		return clazz.getName(); // reutrns  the package of where the class came from as well
 	}
+	
+	public GenericField getFieldByName(String name) {
+		if (primaryKeyField != null) {
+			if (primaryKeyField.getName().equals(name) || primaryKeyField.getColumnName().equals(name)) {
+				return primaryKeyField;
+			}
+		}
+		
+		for (ForeignKeyField fkField: foreignKeyFields) {
+			if (fkField.getName().equals(name) || fkField.getColumnName().equals(name)) {
+				return fkField;
+			}
+		}
+		
+		for (ColumnField cField : columnFields) {
+			if (cField.getName().equals(name) || cField.getColumnName().equals(name)) {
+				return cField;
+			}
+		}
+		
+		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
+	}
 }

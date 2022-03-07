@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 import com.revature.annotations.JoinColumn;
 
-public class ForeignKeyField {
+public class ForeignKeyField implements GenericField {
 	
 	
 	private Field field; // from java.lang.reflect

@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Id {
 	String columnName() default "";
+	boolean serial() default true;
 }

@@ -2,9 +2,10 @@ package com.revature.util;
 
 import java.lang.reflect.Field;
 
+import com.revature.annotations.Column;
 import com.revature.annotations.Id;
 
-public class PrimaryKeyField {
+public class PrimaryKeyField implements GenericField {
 	
 	private Field field; // from java.lang.reflect
 	
@@ -33,5 +34,9 @@ public class PrimaryKeyField {
 	// getColumnName() --> extract the column name that the user sets for that field
 	public String getColumnName() {
 		return field.getAnnotation(Id.class).columnName(); // extract the columnName() property that the user sets
+	}
+	
+	public boolean isSerial() {
+		return field.getAnnotation(Column.class).serial();
 	}
 }
