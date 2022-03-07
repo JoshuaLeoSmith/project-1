@@ -18,16 +18,15 @@ import com.revature.annotations.Exclude;
  * - Field name?
  * - column Name (which they indicated in the column annotation meta data)
  */
-public class ColumnField {
+public class ColumnField implements GenericField {
 	private Field field;
 	
 	public ColumnField(Field field) {
 		if (field.getAnnotation(Column.class) == null && field.getAnnotation(Exclude.class) != null) {
-			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + getName() + " is not Annotated");
+			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + getName() + " is not Annotated with @Column or is Annotated with @Exclude");
 		}
 		
 		this.field = field;
-		
 	}
 	
 	public String getName() {
@@ -38,38 +37,62 @@ public class ColumnField {
 	public Class<?> getType() {
 		return field.getType();
 	}
-
+	
+	public boolean isExcluded() {
+		return field.getAnnotation(Column.class) == null;
+	}
 
 	public String getColumnName() {
-		if (field.getAnnotation(Column.class) == null)
+		if (this.isExcluded())
 			return "";
 		
 		return field.getAnnotation(Column.class).columnName();
 	}
 	
+	public boolean isSerial() {
+		if (this.isExcluded())
+			return false;
+		
+		return field.getAnnotation(Column.class).serial();
+	}
+	
 	public boolean isUnique() {
-		if (field.getAnnotation(Column.class) == null)
+		if (this.isExcluded())
 			return false;
 		
 		return field.getAnnotation(Column.class).unique();
 	}
 	
 	public boolean isNullable() {
-		if (field.getAnnotation(Column.class) == null)
+		if (this.isExcluded())
 			return true;
 		
 		return field.getAnnotation(Column.class).nullable();
 	}
 	
+	public String getDefaultValue() {
+		if (this.isExcluded())
+			return "";
+		
+		return field.getAnnotation(Column.class).default_value();
+	}
+	
 	public int getPercision() {
-		if (field.getAnnotation(Column.class) == null)
-			return 0;
+		if (this.isExcluded())
+			return 6;
 		
 		return field.getAnnotation(Column.class).precision();
 	}
 	
+	public int getScale() {
+		if (this.isExcluded())
+			return 0;
+		
+		return field.getAnnotation(Column.class).scale();
+	}
+	
 	public int getLength() {
-		if (field.getAnnotation(Column.class) == null)
+		if (this.isExcluded())
 			return 255;
 		
 		return field.getAnnotation(Column.class).length();

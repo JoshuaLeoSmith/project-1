@@ -13,8 +13,10 @@ import org.apache.log4j.Logger;
 
 import com.revature.person;
 import com.revature.annotations.*;
-import com.revature.inspection.ClassInspector;
+import com.revature.util.ColumnField;
+//import com.revature.inspection.ClassInspector;
 import com.revature.util.ConnectionUtil;
+import com.revature.util.MetaModel;
 
 
 public class TableDao {
@@ -24,17 +26,21 @@ public class TableDao {
 	private static int String =0;
 	private static Connection conn = ConnectionUtil.getConnection();
 
-	public static void insert(String name, List<Field> allFieldsInTable) throws IllegalAccessException{
+	public static void insert(String name, MetaModel<?> allFieldsInTable) throws IllegalAccessException{
 		name="\""+name+"\"";
+		
 		if(managment.toLowerCase().equals("validate")) {
 			throw new IllegalAccessException("Can't insert tables on validate control. Change control to insert.");
 		}	
-		String sql ="create table";
+		String sql ="";
 		/*	validate: validate the schema, makes no changes to the database.
 			update: update the schema.
 			create: creates the schema, destroying previous data.
 			
 		 * */
+		if(managment.toLowerCase().equals("create")) {
+			sql += "create table if not exists";
+		}
 		if(managment.toLowerCase().equals("update")) {
 			sql += " if not exists";
 		}
@@ -45,20 +51,13 @@ public class TableDao {
 		//System.out.println(allFieldsInTable.size());
 		//System.out.println(sql);
 		int i=0;
-		for (Field myField : allFieldsInTable) {
+		for (ColumnField myField : allFieldsInTable.getColumns()) {
 			//System.out.printf("\n"+i+" - "+myField.toString());
 			i++;
 			fieldName=myField.getName();//Correct the naming convention
 			modifications=fieldName;
-			if(myField.getAnnotation(Exclude.class) != null) {
-				System.out.println("Ecluded variable");
-				continue;
-			}			
-			if(myField.getAnnotation(Id.class) != null) {
-				System.out.printf(" ID annotation ");
-				modifications+=" serial primary key";
-			}
-			else if(myField.getType()==int.class || myField.getType()==byte.class||myField.getType()==short.class||myField.getType()==long.class) {
+			
+			if(myField.getType()==int.class || myField.getType()==byte.class||myField.getType()==short.class||myField.getType()==long.class) {
 				modifications+=" int";
 				//System.out.printf(" int type");
 			}//Test against Integer
@@ -82,25 +81,20 @@ public class TableDao {
 				modifications+=" date";
 				//System.out.printf(" date type");
 			}
-			else {
-				continue;
-			}
-			/*if(myField. ) {
+			//else {
+			//	continue;
+			//}
+			
+			
+			if(!myField.isNullable()) {
 				modifications+=" not null";
 			}
-			if(myField. ) {
+			if(myField.isUnique()) {
 				modifications+=" unique";
 			}
-			if(myField. ) {
+			/*if(myField. ) {
 				modifications+=" default "+defaultValue;
-			}
-			if(myField. ) {
-				modifications+=" references "+refrenceValue +" on delete cascade";
-			}
-			*
-			*
-			*
-			*/ //
+			}*/
 			modifications+=",";
 			
 			sql+=modifications;
@@ -109,14 +103,24 @@ public class TableDao {
 		sql +=");";
 		
 		try {
+			if(managment.toLowerCase().equals("create")) {
+				String dropsql = "drop table if exists "+schema+"."+name+" cascade";
+				PreparedStatement dropStatment= conn.prepareStatement(dropsql);
+				System.out.println("\n"+dropStatment.toString());//Uncomment if throwing errors to see what is being queried
+				
+				dropStatment.execute();
+			}
+			
+			
 			String createSchemaSql="CREATE SCHEMA IF NOT EXISTS "+schema;
+			//String createSchemaSql="CREATE SCHEMA IF NOT EXISTS "+schema;
 			PreparedStatement createStatment= conn.prepareStatement(createSchemaSql);
 			
 			
 			PreparedStatement myStatment= conn.prepareStatement(sql);
 			
 			
-			//System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors to see what is being queried
+			System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors to see what is being queried
 			//System.out.println("\n"+createStatment.toString());//Uncomment if throwing errors to see what is being queried
 			
 			
@@ -140,7 +144,7 @@ public class TableDao {
 	
 	public static void main(String[] args) throws IllegalAccessException {
 		
-		List<Field> bob =ClassInspector.getColumns(person.class);		
+		MetaModel bob = MetaModel.of(person.class);
 		insert("Dead People", bob);
 		
 	}

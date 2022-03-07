@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
+import com.revature.annotations.Exclude;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
 
@@ -56,8 +57,9 @@ public class MetaModel<T> {
 			// the column reference variable will NOT be null if the field is indeed
 			// annotated with @Column
 			Column column = field.getAnnotation(Column.class);
+			Exclude exclude = field.getAnnotation(Exclude.class);
 
-			if (column != null) {
+			if (column != null && exclude == null) {
 				// if the column is indeed marked with @Colum, instantiate a new ColumnField
 				// object with its data
 				columnFields.add(new ColumnField(field));
@@ -119,5 +121,27 @@ public class MetaModel<T> {
 	
 	public String getClassName() {
 		return clazz.getName(); // reutrns  the package of where the class came from as well
+	}
+	
+	public GenericField getFieldByName(String name) {
+		if (primaryKeyField != null) {
+			if (primaryKeyField.getName().equals(name) || primaryKeyField.getColumnName().equals(name)) {
+				return primaryKeyField;
+			}
+		}
+		
+		for (ForeignKeyField fkField: foreignKeyFields) {
+			if (fkField.getName().equals(name) || fkField.getColumnName().equals(name)) {
+				return fkField;
+			}
+		}
+		
+		for (ColumnField cField : columnFields) {
+			if (cField.getName().equals(name) || cField.getColumnName().equals(name)) {
+				return cField;
+			}
+		}
+		
+		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
 	}
 }
