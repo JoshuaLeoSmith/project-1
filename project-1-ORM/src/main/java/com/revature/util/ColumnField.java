@@ -1,7 +1,11 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.revature.annotations.Check;
+import com.revature.annotations.Checks;
 import com.revature.annotations.Column;
 import com.revature.annotations.Exclude;
 
@@ -43,8 +47,8 @@ public class ColumnField implements GenericField {
 	}
 
 	public String getColumnName() {
-		if (this.isExcluded())
-			return "";
+		if (this.isExcluded() || field.getAnnotation(Column.class).columnName().equals(""))
+			return field.getName();
 		
 		return field.getAnnotation(Column.class).columnName();
 	}
@@ -98,4 +102,19 @@ public class ColumnField implements GenericField {
 		return field.getAnnotation(Column.class).length();
 	}
 	
+	public List<String> getChecks() {
+		List<String> constriants = new ArrayList<>();
+		Checks checks = field.getAnnotation(Checks.class);
+		
+		if (this.isExcluded() || checks == null)
+			return new ArrayList<>();
+		
+		Check[] checkList = checks.checks();
+		
+		for (Check check: checkList) {
+			constriants.add(check.constriant());
+		}
+		
+		return constriants;
+	}
 }
