@@ -153,12 +153,9 @@ public class MetaModel<T> {
 	public List<GenericField> getAllFields() {
 		List<GenericField> allFields = new ArrayList<>();
 		
-		if (primaryKeyField != null) {
-			allFields.add(primaryKeyField);
-		}
-		
-		allFields.addAll(foreignKeyFields);
-		allFields.addAll(columnFields);
+		allFields.add(this.getPrimaryKey());
+		allFields.addAll(this.getForeignKeys());
+		allFields.addAll(this.getColumns());
 		
 		return allFields;
 	}
