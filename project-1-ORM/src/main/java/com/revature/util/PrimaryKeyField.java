@@ -37,6 +37,6 @@ public class PrimaryKeyField implements GenericField {
 	}
 	
 	public boolean isSerial() {
-		return field.getAnnotation(Column.class).serial();
+		return field.getAnnotation(Id.class).serial();
 	}
 }

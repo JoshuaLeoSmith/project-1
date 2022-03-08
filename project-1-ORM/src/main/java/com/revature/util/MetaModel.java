@@ -1,8 +1,10 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
@@ -143,5 +145,18 @@ public class MetaModel<T> {
 		}
 		
 		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
+	}
+	
+	public List<GenericField> getAllFields() {
+		List<GenericField> allFields = new ArrayList<>();
+		
+		if (primaryKeyField != null) {
+			allFields.add(primaryKeyField);
+		}
+		
+		allFields.addAll(foreignKeyFields);
+		allFields.addAll(columnFields);
+		
+		return allFields;
 	}
 }

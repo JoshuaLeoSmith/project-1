@@ -35,5 +35,8 @@ public class ForeignKeyField implements GenericField {
 	public String getColumnName() {
 		return field.getAnnotation(JoinColumn.class).columnName(); // extract the columnName() property that the user sets
 	}
-
+	
+	public String getMappedBy() {
+		return field.getAnnotation(JoinColumn.class).mappedBy();
+	}
 }
