@@ -4,7 +4,8 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.revature.inspection.ClassInspector;
+import com.revature.util.ColumnField;
+import com.revature.util.MetaModel;
 
 
 public class ServicesImpl implements IServices {
@@ -15,25 +16,13 @@ public class ServicesImpl implements IServices {
 		// Object o has fields that will be added to the table
 		// boolean save indicates whether the changes will be committed or not
 		
+		MetaModel m = new MetaModel(o.getClass());
 		
-		List<Field> fields = new LinkedList<Field>();
-		fields = ClassInspector.getColumns(o.getClass());
-		List<Object> fieldValues = new LinkedList<Object>();
-		
-		
-		for(Field f : fields) {
-			f.setAccessible(true);
-			Object val = null;
-			try {
-				val = f.get(o);
-			} catch(IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			fieldValues.add(val);
-		}
+		LinkedList<Object> fieldValues = (LinkedList<Object>) m.getAllValsOfField(o);
 		
 		System.out.println(fieldValues);
-
+		
+		
 		
 		return -1;
 		// return TableDao.insertIntoTable(fieldValues, save) 
@@ -41,7 +30,15 @@ public class ServicesImpl implements IServices {
 		
 	}
 	
-	
+	//public static void main(String[] args) {
+		
+	//	IServices is = new ServicesImpl();
+	//	TesterClass t = new TesterClass("jls", "123", 21, 3);
+		
+//		is.insert(t, false);
+//		
+	//}
+	//
 	@Override
 	public int remove(int id, boolean save) {
 		
@@ -71,7 +68,7 @@ public class ServicesImpl implements IServices {
 	     
 	
 	@Override 
-	public int roll() {
+	public int rollback() {
 		// will rollback to last commit/savepoint/rollback
 		// basically just call the SQL rollback command
 		

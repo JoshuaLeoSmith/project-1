@@ -1,16 +1,23 @@
 package com.revature.service;
 
 import java.io.Serializable;
+import java.lang.annotation.Target;
 import java.util.Objects;
 import com.revature.annotations.*;
 
-
+@Entity
 public class TesterClass implements Serializable {
 
-	
+	@Column
 	private String username;
+	
+	@Column
 	private String pwd;
+	
+	@Column
 	private double balance;
+	
+	@Id
 	private int id;
 	
 	public TesterClass() {

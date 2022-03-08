@@ -49,11 +49,12 @@ public class MetaModel<T> {
 			return columnFields;
 		
 		Field[] fields = clazz.getDeclaredFields();
+		
 
 		// check if each field has a @Column annotation
 		// if it does, add it to the metamodel's columnField's list
 		for (Field field : fields) {
-
+			
 			// the column reference variable will NOT be null if the field is indeed
 			// annotated with @Column
 			Column column = field.getAnnotation(Column.class);
@@ -123,6 +124,8 @@ public class MetaModel<T> {
 		return clazz.getName(); // reutrns  the package of where the class came from as well
 	}
 	
+	
+	
 	public GenericField getFieldByName(String name) {
 		if (primaryKeyField != null) {
 			if (primaryKeyField.getName().equals(name) || primaryKeyField.getColumnName().equals(name)) {
@@ -144,4 +147,26 @@ public class MetaModel<T> {
 		
 		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
 	}
+	
+	
+	public List<Object> getAllValsOfField(Object o){
+		
+		
+		Field[] fields = clazz.getDeclaredFields();
+		
+		List<Object> fieldValues = new LinkedList<Object>();
+		
+		for(Field f : fields) {
+			
+			try {
+				f.setAccessible(true);
+				fieldValues.add(f.get(o));
+				f.setAccessible(false);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return fieldValues;
+	}
+	
 }
