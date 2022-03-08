@@ -239,7 +239,24 @@ public class TableDao {
 			//Columns.add(fieldName);
 		}
 		sql+=";";
-		System.out.println(sql);
+		//System.out.println(sql);
+		
+		try {
+			
+			PreparedStatement myStatment= conn.prepareStatement(sql);
+			
+			System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors to see what is being queried
+			
+			
+			myStatment.executeQuery();
+			
+		} catch (SQLException e) {
+			
+			logBot.error("Database Error, unable to run");
+			e.printStackTrace();
+		}
+		
+		
 		
 		
 		
