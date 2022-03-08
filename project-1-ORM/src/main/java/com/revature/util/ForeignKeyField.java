@@ -1,6 +1,7 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import com.revature.annotations.JoinColumn;
 
@@ -36,7 +37,33 @@ public class ForeignKeyField implements GenericField {
 		return field.getAnnotation(JoinColumn.class).columnName(); // extract the columnName() property that the user sets
 	}
 	
-	public String getMappedBy() {
-		return field.getAnnotation(JoinColumn.class).mappedBy();
+	public String getMappedByColumn() {
+		return field.getAnnotation(JoinColumn.class).mappedByColumn();
+	}
+	
+	public String getMappedByTable() {
+		return field.getAnnotation(JoinColumn.class).mappedByTable();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(field);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ForeignKeyField other = (ForeignKeyField) obj;
+		return Objects.equals(field, other.field);
+	}
+
+	@Override
+	public String toString() {
+		return "ForeignKeyField [field=" + field + "]";
 	}
 }

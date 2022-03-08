@@ -3,6 +3,7 @@ package com.revature.util;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.revature.annotations.Check;
 import com.revature.annotations.Checks;
@@ -109,12 +110,34 @@ public class ColumnField implements GenericField {
 		if (this.isExcluded() || checks == null)
 			return new ArrayList<>();
 		
-		Check[] checkList = checks.checks();
+		Check[] checkList = checks.value();
 		
 		for (Check check: checkList) {
-			constriants.add(check.constriant());
+			constriants.add(check.value());
 		}
 		
 		return constriants;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(field);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ColumnField other = (ColumnField) obj;
+		return Objects.equals(field, other.field);
+	}
+
+	@Override
+	public String toString() {
+		return "ColumnField [field=" + field + "]";
 	}
 }

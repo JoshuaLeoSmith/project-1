@@ -62,7 +62,7 @@ public class MetaModel<T> {
 			Column column = field.getAnnotation(Column.class);
 			Exclude exclude = field.getAnnotation(Exclude.class);
 
-			if (column != null && exclude == null) {
+			if (column != null || exclude == null) {
 				// if the column is indeed marked with @Colum, instantiate a new ColumnField
 				// object with its data
 				columnFields.add(new ColumnField(field));

@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JoinColumn {
 	String columnName() default "";
-	String mappedBy() default "";
+	String mappedByColumn() default "";
+	String mappedByTable() default "";
 }
