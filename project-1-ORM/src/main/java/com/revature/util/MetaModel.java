@@ -1,8 +1,10 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
@@ -60,7 +62,7 @@ public class MetaModel<T> {
 			Column column = field.getAnnotation(Column.class);
 			Exclude exclude = field.getAnnotation(Exclude.class);
 
-			if (column != null && exclude == null) {
+			if (column != null || exclude == null) {
 				// if the column is indeed marked with @Colum, instantiate a new ColumnField
 				// object with its data
 				columnFields.add(new ColumnField(field));
@@ -147,8 +149,17 @@ public class MetaModel<T> {
 		
 		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
 	}
-	
-	
+
+	public List<GenericField> getAllFields() {
+		List<GenericField> allFields = new ArrayList<>();
+		
+		allFields.add(this.getPrimaryKey());
+		allFields.addAll(this.getForeignKeys());
+		allFields.addAll(this.getColumns());
+		
+		return allFields;
+	}
+  
 	public List<Object> getAllValsOfField(Object o){
 		
 		
@@ -168,5 +179,4 @@ public class MetaModel<T> {
 		}
 		return fieldValues;
 	}
-	
 }

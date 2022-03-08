@@ -7,8 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JoinColumn {
-	String columnName() default "";
-	String mappedByColumn() default "";
-	String mappedByTable() default "";
+public @interface Checks {
+	Check[] value();
 }
