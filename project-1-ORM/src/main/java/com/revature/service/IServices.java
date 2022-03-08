@@ -10,7 +10,7 @@ public interface IServices {
 	
 	public int commit();
 	
-	public int roll();
+	public int rollback();
 	
 	
 	///public int create();

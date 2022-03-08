@@ -97,4 +97,5 @@ public class ColumnField implements GenericField {
 		
 		return field.getAnnotation(Column.class).length();
 	}
+	
 }
