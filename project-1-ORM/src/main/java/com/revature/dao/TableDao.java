@@ -2,7 +2,10 @@ package com.revature.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -227,6 +230,7 @@ public class TableDao {
 		
 		int i=0;
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
+			
 			//System.out.printf("\n"+i+" - "+myField.toString());
 			i++;
 			fieldName=myField.getColumnName();//Correct the naming convention
@@ -240,7 +244,7 @@ public class TableDao {
 		}
 		sql+=";";
 		//System.out.println(sql);
-		
+		List<String> badColumns= new ArrayList();
 		try {
 			
 			PreparedStatement myStatment= conn.prepareStatement(sql);
@@ -248,7 +252,11 @@ public class TableDao {
 			System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors to see what is being queried
 			
 			
-			myStatment.executeQuery();
+			 ResultSet rs= myStatment.executeQuery();
+			 
+			 while(rs.next()) {
+				 String columnName=rs.getString("column_name");
+			 }
 			
 		} catch (SQLException e) {
 			
@@ -256,6 +264,12 @@ public class TableDao {
 			e.printStackTrace();
 		}
 		
+		System.out.println(badColumns);
+		
+		
+		for(String columnName : badColumns) {
+			sql="ALTER TABLE "+name+" DROP COLUMN "+columnName+";";
+		}
 		
 		
 		
@@ -268,6 +282,8 @@ public class TableDao {
 		
 		MetaModel bob = MetaModel.of(person.class);
 		insert(bob.getClassName(), bob);
+		
+		
 		
 	}
 	
