@@ -23,7 +23,7 @@ public class TesterClass implements Serializable {
 		
 	}
 	
-	public TesterClass(String username, String pwd, double balance, int id) {
+	public TesterClass(int id, String username, String pwd, double balance) {
 		super();
 		this.username = username;
 		this.pwd = pwd;
