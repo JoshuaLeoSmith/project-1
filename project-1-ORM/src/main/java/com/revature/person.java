@@ -26,26 +26,25 @@ public class person {
 	
 	@Id
 	protected int userID;
-	@Column
+	@Column(unique=true,nullable=false)
 	protected String username;
-	@Column
+	@Column(nullable=false)
 	protected String passwordHash;
-	@Column
+	@Column(default_value="0")
 	protected int accessLevel; //0=customer, 1=employee, 2=admin
-	@Column
+	@Column(default_value="false")
 	protected boolean verified=false;	
-	@Column
+	@Column(unique=true)
 	protected String email;
-	@Column
+	@Column(length=15)
 	protected String phoneNumber;
-	@Column
+	@Column(columnName="First Name")
 	protected String fName;
-	@Column
 	protected String lName;
-	@Column
 	protected String address;
-	@Column
 	protected LocalDate dob;
+	@Column(precision=5, scale=2,default_value="0" )
+	protected double balance;
 	
 	@Exclude
 	protected List<Account> accounts;
