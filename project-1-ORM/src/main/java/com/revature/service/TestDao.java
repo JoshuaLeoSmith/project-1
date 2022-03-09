@@ -1,6 +1,7 @@
 package com.revature.service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import com.revature.util.ConnectionUtil;
@@ -8,7 +9,7 @@ import com.revature.util.ConnectionUtil;
 
 public class TestDao {
 	
-	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, boolean save) {
+	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, boolean save) {
 		
 		try(Connection conn = ConnectionUtil.getConnection()){
 			
@@ -32,27 +33,52 @@ public class TestDao {
 			
 			
 			
-			String sql = "INSERT INTO " + schema + "." + tableName + " " + colNames + " VALUES " + values;
+			String sql = "INSERT INTO " + schema + "." + tableName + " " + colNames + " VALUES " + values + " RETURNING " + pkName;
 			
 			
 			
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
-			stmt.execute();
+		
 			
+			ResultSet rs;
 			
+			int id = -1;
+			if((rs = stmt.executeQuery()) != null) {
+				rs.next();
+				
+				id = rs.getInt(pkName);
+			}
 			
+			if(save) {
+				sql = "COMMIT";
+				stmt = conn.prepareStatement(sql);
+				stmt.execute();
+			}
 			
+			return id;
 		
 		} catch(SQLException e) {
 			e.printStackTrace();
+			return -1;	
+		}
+	}
+	
+	public int remove(String tableName, int id, boolean save) {
+		
+		try(Connection conn = ConnectionUtil.getConnection()){
+		
+			String sql = "DELETE FROM joshuas.users WHERE joshuas.users.id = ?;";
+			return -1;
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+			return -1;
 		}
 		
 		
 		
-		
-		return -1;
-		
 	}
+	
 	
 }
