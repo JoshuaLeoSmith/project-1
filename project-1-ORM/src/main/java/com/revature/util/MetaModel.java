@@ -61,8 +61,10 @@ public class MetaModel<T> {
 			// annotated with @Column
 			Column column = field.getAnnotation(Column.class);
 			Exclude exclude = field.getAnnotation(Exclude.class);
+			Id id = field.getAnnotation(Id.class);
+			JoinColumn jColumn = field.getAnnotation(JoinColumn.class);
 
-			if (column != null || exclude == null) {
+			if (column != null || (exclude == null && id == null && jColumn == null)) {
 				// if the column is indeed marked with @Colum, instantiate a new ColumnField
 				// object with its data
 				columnFields.add(new ColumnField(field));
@@ -126,9 +128,9 @@ public class MetaModel<T> {
 		return clazz.getName(); // reutrns  the package of where the class came from as well
 	}
 	
-	
-	
-	public GenericField getFieldByName(String name) {
+	// to use this function, you must first call all of the get methods of MetaModel for each instance before
+	// calling this function so that all of the field have had at least one chance to be initialized
+	public GenericField getFieldByName(String name){
 		if (primaryKeyField != null) {
 			if (primaryKeyField.getName().equals(name) || primaryKeyField.getColumnName().equals(name)) {
 				return primaryKeyField;
@@ -150,17 +152,21 @@ public class MetaModel<T> {
 		throw new RuntimeException("Unable to find field \"" + name + "\" in class \"" + this.getClassName() + "\"");
 	}
 
+	// to use this function, you must first call all of the get methods of MetaModel for each instance before
+	// calling this function so that all of the field have had at least one chance to be initialized
 	public List<GenericField> getAllFields() {
 		List<GenericField> allFields = new ArrayList<>();
+		if (primaryKeyField != null)
+			allFields.add(primaryKeyField);
 		
-		allFields.add(this.getPrimaryKey());
-		allFields.addAll(this.getForeignKeys());
-		allFields.addAll(this.getColumns());
+		allFields.addAll(foreignKeyFields);
+		
+		allFields.addAll(columnFields);
 		
 		return allFields;
 	}
   
-	public List<Object> getAllValsOfField(Object o){
+	public List<Object> getAllValsOfField(Object o) {
 		
 		
 		Field[] fields = clazz.getDeclaredFields();
