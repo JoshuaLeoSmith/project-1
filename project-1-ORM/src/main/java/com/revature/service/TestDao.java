@@ -64,21 +64,22 @@ public class TestDao {
 		}
 	}
 	
-	public int remove(String tableName, int id, boolean save) {
+	public int remove(String tableName, int id, String pkName, boolean save) {
+		
+		
 		
 		try(Connection conn = ConnectionUtil.getConnection()){
-		
-			String sql = "DELETE FROM joshuas.users WHERE joshuas.users.id = ?;";
+			String schema = ConnectionUtil.getSchema();
+			
+			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + pkName + "=" + "?";
+			
+			
+			
 			return -1;
 			
 		} catch(SQLException e) {
 			e.printStackTrace();
 			return -1;
 		}
-		
-		
-		
 	}
-	
-	
 }

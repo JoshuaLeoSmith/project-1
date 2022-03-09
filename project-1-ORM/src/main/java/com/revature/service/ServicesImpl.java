@@ -4,11 +4,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
-import com.revature.annotations.Id;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
 
@@ -16,6 +13,7 @@ import com.revature.util.MetaModel;
 public class ServicesImpl implements IServices {
 
 	private static TestDao td = new TestDao();
+	
 	
 	@Override
 	public int create(String tableName, Class<?> clazz) {
@@ -73,9 +71,9 @@ public class ServicesImpl implements IServices {
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
 		
+		return -1;
 		
-		
-		return td.remove(tableName, id, save);
+		//return td.remove(tableName, id, m.getPrimaryKey().getColumnName(), save);
 		// return TableDao.removeFromTable(id) 
 		// this should return the id of the row deleted, or -1 if failed.
 		
