@@ -2,8 +2,12 @@ package com.revature.service;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.revature.annotations.Column;
+import com.revature.annotations.Entity;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
 
@@ -31,12 +35,17 @@ public class ServicesImpl implements IServices {
 		// boolean save indicates whether the changes will be committed or not
 		
 		Field[] fields = o.getClass().getDeclaredFields(); 
-		List<Object> fieldValues = new ArrayList<Object>();
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
+		//MetaModel m = MetaModel.of(o.getClass());
+		//System.out.println(m.getPrimaryKey());
+		
 		
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
-				fieldValues.add(f.get(o));
+				if (f.getAnnotation(Column.class) != null) {
+					colNameToValue.put(f.getName(), f.get(o));
+				}
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
@@ -45,13 +54,14 @@ public class ServicesImpl implements IServices {
 		}
 		
 		
-		return td.insert(fieldValues, save);
+		// return the list of field values, the name of the table, and if you want to commit the changes.
+		return td.insert(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), true);
 		// this should return the id of the new row created, or -1 if failed.
 	}
 	
 	public static void main(String[] args) {
 		IServices is = new ServicesImpl();
-		TesterClass t = new TesterClass("jls", "123", 21, 3);
+		TesterClass t = new TesterClass("unamejdlssg3", "pwd1234f", 214.44);
 		is.insert(t, false);
 	
 	}
