@@ -83,8 +83,8 @@ public class MetaModelTest {
 	@Test(expected = RuntimeException.class)
 	public void testGetColumnsKeysOnly() {
 		MetaModel<Class<?>> meta = MetaModel.of(DummyProjectTable.class);
-
-		meta.getColumns().forEach(System.out::println);;
+		System.out.println("Bob");
+		meta.getColumns().forEach(System.out::println);
 	}
 
 	@Test

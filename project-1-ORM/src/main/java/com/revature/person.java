@@ -24,7 +24,7 @@ public class person {
 	@Exclude
 	protected int minAccessLevel=0;
 	
-	@Id
+	@Id(serial=true)
 	protected int userID;
 	@Column(unique=true,nullable=false)
 	protected String username;
@@ -43,9 +43,10 @@ public class person {
 	protected String lName;
 	protected String address;
 	protected LocalDate dob;
-	@Column(precision=5, scale=2,default_value="0" )
-	protected double balance;
-	
+	@Column(precision=5, scale=2, default_value="0" )
+	protected double balance;	
+	@Column(serial=true )
+	protected int testSerial;
 	@Exclude
 	protected List<Account> accounts;
 	
