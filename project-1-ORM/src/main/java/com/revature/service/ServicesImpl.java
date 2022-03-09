@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
+import com.revature.annotations.Id;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
 
@@ -36,10 +37,10 @@ public class ServicesImpl implements IServices {
 		
 		Field[] fields = o.getClass().getDeclaredFields(); 
 		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
-		//MetaModel m = MetaModel.of(o.getClass());
-		//System.out.println(m.getPrimaryKey());
 		
+		MetaModel m = MetaModel.of(o.getClass());
 		
+	
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
@@ -55,33 +56,33 @@ public class ServicesImpl implements IServices {
 		
 		
 		// return the list of field values, the name of the table, and if you want to commit the changes.
-		return td.insert(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), true);
+		return td.insert(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
 		// this should return the id of the new row created, or -1 if failed.
 	}
 	
 	public static void main(String[] args) {
 		IServices is = new ServicesImpl();
-		TesterClass t = new TesterClass("unamejdlssg3", "pwd1234f", 214.44);
-		is.insert(t, false);
+		TesterClass t = new TesterClass("joshua224", "pwd1234f", 214.44);
+		System.out.println(is.insert(t, true));
 	
 	}
 	
 	@Override
-	public int remove(int id, boolean save) {
+	public int remove(String tableName, int id, boolean save) {
 		
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
 		
 		
 		
-		return -1;
+		return td.remove(tableName, id, save);
 		// return TableDao.removeFromTable(id) 
 		// this should return the id of the row deleted, or -1 if failed.
 		
 	}
 	
 	@Override
-	public int remove(String where, boolean save) {
+	public int remove(String tableName, String where, boolean save) {
 		
 		// String where is the condition that will be used to determine what will
 		// 		be removed. (ex. age > 4) .
