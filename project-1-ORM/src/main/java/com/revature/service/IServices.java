@@ -11,6 +11,8 @@ public interface IServices {
 	public int commit();
 	
 	public int rollback();
+
+	int create(String tableName, Class<?> clazz);
 	
 	
 	///public int create();
