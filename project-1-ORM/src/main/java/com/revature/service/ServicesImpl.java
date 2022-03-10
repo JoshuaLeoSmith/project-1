@@ -2,7 +2,6 @@ package com.revature.service;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
@@ -60,39 +59,53 @@ public class ServicesImpl implements IServices {
 	
 	public static void main(String[] args) {
 		IServices is = new ServicesImpl();
-		TesterClass t = new TesterClass("joshua224", "pwd1234f", 214.44);
-		System.out.println(is.insert(t, true));
-	
+		//TesterClass t = new TesterClass("joshua224", "pwd1234f", 214.44);
+		//TesterClass t1 = new TesterClass();
+		//System.out.println(is.insert(t1, true));
+		//is.insert(new TesterClass("josh ua111", "pwd1", 214.44), true);
+		//is.insert(new TesterClass("jos hua21", "pwd2", 214.44), true);
+		//is.insert(new TesterClass("joshua31", "pwd3", 214.44), true);
+		//is.insert(new TesterClass("joshua41", "pwd4", 214.44), true);
+		//is.insert(new TesterClass("joshua51", "pw5", 214.44), true);
+		//is.remove(TesterClass.class, 39 , false);
+		is.remove(TesterClass.class, "id > 51", true);
+		System.out.println("program has ended");
 	}
 	
 	@Override
-	public int remove(String tableName, int id, boolean save) {
+	public int remove(Class <?> clazz, int id, boolean save) {
 		
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
 		
-		return -1;
+		MetaModel m = MetaModel.of(clazz);
 		
-		//return td.remove(tableName, id, m.getPrimaryKey().getColumnName(), save);
+		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		String pkName = m.getPrimaryKey().getColumnName();
+	
+		return td.remove(tableName, id, pkName, save);
 		// return TableDao.removeFromTable(id) 
 		// this should return the id of the row deleted, or -1 if failed.
 		
 	}
 	
 	@Override
-	public int remove(String tableName, String where, boolean save) {
+	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save) {
 		
 		// String where is the condition that will be used to determine what will
 		// 		be removed. (ex. age > 4) .
 		// boolean save indicates whether the changes will be committed or not
 		
+		MetaModel m = MetaModel.of(clazz);
 		
-		return -1;
+		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		String pkName = m.getPrimaryKey().getColumnName();
+	
+		return td.remove(tableName, where, pkName, save);
 		// return TableDao.removeFromTable(where) 
-		// this should return the id of the row deleted, or -1 if failed.
+		// this should return an arraylist of ids which were deleted
 	}
 	     
-	
 	@Override 
 	public int rollback() {
 		// will rollback to last commit/savepoint/rollback
