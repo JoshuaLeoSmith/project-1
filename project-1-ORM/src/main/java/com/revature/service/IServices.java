@@ -1,11 +1,13 @@
 package com.revature.service;
 
+import java.util.ArrayList;
+
 public interface IServices {
 
 	public int insert(Object o, boolean save);
 	
-	public int remove(String tableName, int id, boolean save);
-	public int remove(String tableName, String where, boolean save);
+	public int remove(Class<?> clazz, int id, boolean save);
+	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save);
 	
 	
 	public int commit();
