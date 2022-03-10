@@ -65,15 +65,15 @@ public class TableDao {
 	
 	public static String getSQLModification(ColumnField myField) {
 		String modifications="";			
+		if(myField.isSerial() ) {
+			modifications+=" serial";
+		}
 		if(!myField.isNullable()) {
 			modifications+=" not null";
 		}
 		if(myField.isUnique()) {
 			modifications+=" unique";
-		}
-		if(myField.isSerial() ) {
-			modifications+=" serial";
-		}
+		}		
 		if(!myField.getDefaultValue().equals("")) {
 			modifications+=" default "+myField.getDefaultValue();
 		}
@@ -149,7 +149,9 @@ public class TableDao {
 		String modifications="";
 		for (ColumnField myField : allFieldsInTable.getColumns()) {	
 			modifications+=" \""+getSQLName(myField)+"\" ";
-			modifications+=" "+getSQLType(myField)+" ";
+			if(!myField.isSerial()) {
+				modifications+=" "+getSQLType(myField)+" ";
+			}
 			modifications+=getSQLModification(myField)+",";	
 			
 		}
@@ -186,25 +188,19 @@ public class TableDao {
 		PrimaryKeyField PField = allFieldsInTable.getPrimaryKey();
 		fieldName=PField.getColumnName();
 		if(PField.getColumnName().equals("")) {
-			fieldName=PField.getName().toLowerCase();
+			fieldName=PField.getName();
 		}		
 		List<String> newColumns=new ArrayList();
 		PField = allFieldsInTable.getPrimaryKey();
 		String PfieldName="\""+PField.getColumnName()+"\"";//Correct the naming convention
 		if(PField.getColumnName().equals("")) {			
 			PfieldName=PField.getName();//Correct the naming convention
-		}
+		}		
 		
-		
-		
-		
-		
-		
-		
-		newColumns.add(PfieldName.toLowerCase());
+		newColumns.add(PfieldName);
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
 			//System.out.println(myField.getName());
-			newColumns.add(getSQLName(myField).toLowerCase());
+			newColumns.add(getSQLName(myField));
 		}
 				
 		List<String> currentColumns= new ArrayList();
@@ -227,7 +223,7 @@ public class TableDao {
 		
 		fieldName=PfieldName;
 		sql="ALTER TABLE \""+schema+"\".\""+name+"\"";
-		if (!currentColumns.contains(fieldName.toLowerCase())) {
+		if (!currentColumns.contains(fieldName)) {
 			sql+=" add";
 		}
 		else {
@@ -272,12 +268,14 @@ public class TableDao {
 		
 		System.out.println("-----------------");
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
-			fieldName=getSQLName(myField).toLowerCase();
+			fieldName=getSQLName(myField);
 			sql="ALTER TABLE \""+schema+"\".\""+name+"\"";
 			if (columnsToAdd.contains(fieldName)) {
 				sql+=" add";
 				sql+=" \""+getSQLName(myField)+"\" ";
-				sql+=" "+getSQLType(myField)+" ";
+				if(!myField.isSerial()) {
+					sql+=" "+getSQLType(myField)+" ";
+				}
 				sql+=getSQLModification(myField);	
 				System.out.println(sql);
 				myStatment= conn.prepareStatement(sql);
@@ -290,6 +288,7 @@ public class TableDao {
 				String alterSqlNull=sql+" alter column \""+fieldName+"\"";
 				String alterSqlUnique=sql;
 				String alterSqlDefault=sql+" alter column \""+fieldName+"\"";
+				String alterSqlSerial=sql+" alter column \""+fieldName+"\"";
 				
 				if(myField.isNullable()) {
 					alterSqlNull+=" drop not null";
@@ -300,6 +299,7 @@ public class TableDao {
 				if(myField.isUnique()) {
 					alterSqlUnique+=" Drop CONSTRAINT if exists \""+fieldName+"_unique\";";	 
 					myStatment= conn.prepareStatement(alterSqlUnique);
+					System.out.println(myStatment.toString());
 					myStatment.execute();
 					alterSqlUnique=sql;
 					alterSqlUnique+=" ADD CONSTRAINT \""+fieldName+"_unique\" UNIQUE (\""+fieldName+"\");";					
@@ -307,9 +307,22 @@ public class TableDao {
 				else {
 					alterSqlUnique+=" drop CONSTRAINT if exists \""+fieldName+"_unique\";";	 					
 				}
-				/*if(myField.isSerial() ) {
-					sql+=" serial";
-				}*/
+				if(myField.isSerial() ) {					
+					String CreateSequence="CREATE SEQUENCE if not exists "+schema+".seq_"+fieldName+" owned by "+schema+"."+name+".\""+fieldName+"\"";
+					String SelectSequence="SELECT setval('"+schema+".seq_"+fieldName+"', coalesce(max(\""+fieldName+"\"), 0) + 1, false) from "+""+schema+"."+name+";";
+					String AlterSequence ="ALTER TABLE "+""+schema+"."+name+" alter column \""+fieldName+"\" set default nextval('"+schema+".seq_"+fieldName+"');";
+					
+					myStatment= conn.prepareStatement(CreateSequence);
+					System.out.println(myStatment.toString());
+					myStatment.execute();
+					myStatment= conn.prepareStatement(SelectSequence);
+					System.out.println(myStatment.toString());
+					myStatment.execute();
+					myStatment= conn.prepareStatement(AlterSequence);
+					System.out.println(myStatment.toString());
+					myStatment.execute();
+					
+				}
 				if(myField.getDefaultValue().equals("")) {
 					alterSqlDefault+=" drop default";
 				}
@@ -347,7 +360,7 @@ public class TableDao {
 	public static void main(String[] args) throws IllegalAccessException, SQLException {
 		
 		MetaModel bob = MetaModel.of(person.class);
-		insert(bob.getClassName(), bob);
+		insert(bob.getSimpleClassName(), bob);
 		
 		
 		
