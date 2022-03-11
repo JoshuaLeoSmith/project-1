@@ -58,7 +58,7 @@ public class TransactionDao {
 		}
 	}
 	
-	public void releaseSavepoint(Savepoint savepoint) {
+	public void releaseSavepoint(String name, Savepoint savepoint) {
 		try {
 			conn.releaseSavepoint(savepoint);
 		} catch (SQLException e) {

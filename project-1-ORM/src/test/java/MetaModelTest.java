@@ -15,6 +15,10 @@ import com.revature.annotations.Entity;
 import com.revature.annotations.Exclude;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
+import com.revature.annotations.ManyToMany;
+import com.revature.annotations.ManyToOne;
+import com.revature.annotations.OneToMany;
+import com.revature.annotations.OneToOne;
 import com.revature.util.ColumnField;
 import com.revature.util.ForeignKeyField;
 import com.revature.util.GenericField;
@@ -47,10 +51,10 @@ public class MetaModelTest {
 			assertTrue(meta.getPrimaryKey().equals(pkField));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetPrimaryKeyValid");
+			throw new AssertionError("Failed testGetPrimaryKeyValid: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetPrimaryKeyValid");
+			throw new AssertionError("Failed testGetPrimaryKeyValid: " + e.getMessage());
 		}
 	}
 
@@ -74,10 +78,10 @@ public class MetaModelTest {
 			assertTrue(meta.getColumns().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsExclude");
+			throw new AssertionError("Failed testGetColumnsExclude: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsExclude");
+			throw new AssertionError("Failed testGetColumnsExclude: " + e.getMessage());
 		}
 	}
 
@@ -100,10 +104,10 @@ public class MetaModelTest {
 			assertTrue(meta.getColumns().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsMix");
+			throw new AssertionError("Failed testGetColumnsMix: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsMix");
+			throw new AssertionError("Failed testGetColumnsMix: " + e.getMessage());
 		}
 	}
 
@@ -126,13 +130,27 @@ public class MetaModelTest {
 			assertTrue(meta.getForeignKeys().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetForeignKeysOne");
+			throw new AssertionError("Failed testGetForeignKeysOne: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetForeignKeysOne");
+			throw new AssertionError("Failed testGetForeignKeysOne: " + e.getMessage());
 		}
 	}
-
+	
+	@Test(expected=IllegalStateException.class)
+	public void testGetNoRelationForeignKeys () {
+		MetaModel<Class<?>> meta = MetaModel.of(DummyInvalidRelationTable.class);
+		
+		meta.getForeignKeys();
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testGetNoMapForeignKeys () {
+		MetaModel<Class<?>> meta = MetaModel.of(DummyInvalidMapTable.class);
+		
+		meta.getForeignKeys();
+	}
+	
 	// getFieldByName
 	@Test
 	public void testGetFieldByNameValidColumnDefault() {
@@ -157,10 +175,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("last_name"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -187,10 +205,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("First_name"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -217,10 +235,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("user_id"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -247,10 +265,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("user_Id"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -277,10 +295,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("id"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -307,10 +325,10 @@ public class MetaModelTest {
 			assertEquals(meta.getFieldByName("ID"), column);
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -354,7 +372,7 @@ public class MetaModelTest {
 		meta.getFieldByName("favorite_color");
 	}
 
-	// GetALLFields
+	// getAllFields
 	@Test
 	public void testGetAllFieldsMissingForeignKeys() {
 		MetaModel<Class<?>> meta = MetaModel.of(DummyTable.class);
@@ -381,10 +399,10 @@ public class MetaModelTest {
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetColumnsSimple: " + e.getMessage());
 		}
 	}
 
@@ -413,10 +431,10 @@ public class MetaModelTest {
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsMissingColumns");
+			throw new AssertionError("Failed testGetAllFieldsMissingColumns: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsMissingColumns");
+			throw new AssertionError("Failed testGetAllFieldsMissingColumns: " + e.getMessage());
 		}
 	}
 
@@ -445,10 +463,10 @@ public class MetaModelTest {
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey");
+			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey");
+			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey: " + e.getMessage());
 		}
 	}
 
@@ -465,16 +483,16 @@ public class MetaModelTest {
 		
 		try {
 			List<GenericField> columns = Arrays.asList(
-					new ColumnField(DummyNoPKTable.class.getDeclaredField("username")),
-					new ForeignKeyField(DummyNoPKTable.class.getDeclaredField("id")));
+					new ForeignKeyField(DummyJoinTable.class.getDeclaredField("user_id")),
+					new ForeignKeyField(DummyJoinTable.class.getDeclaredField("acc_id")));
 
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsJoinTable");
+			throw new AssertionError("Failed testGetAllFieldsJoinTable: " + e.getMessage());
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetAllFieldsJoinTable");
+			throw new AssertionError("Failed testGetAllFieldsJoinTable: " + e.getMessage());
 		}
 	}
 
@@ -510,6 +528,7 @@ public class MetaModelTest {
 	}
 }
 
+// Class definitions (for testing only)
 class DummyNotTable {
 }
 
@@ -521,7 +540,8 @@ class DummyPKOnlyTable {
 
 @Entity
 class DummyNoPKTable {
-	@JoinColumn
+	@JoinColumn(mappedByColumn="test", mappedByTable="test")
+	@ManyToOne
 	private int id;
 
 	@Column
@@ -552,6 +572,7 @@ class DummyProjectTable {
 	@Id
 	private int id;
 
+	@OneToMany
 	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
 	private int user_id;
 }
@@ -559,10 +580,31 @@ class DummyProjectTable {
 @Entity(tableName = "test")
 class DummyJoinTable {
 	@Id
+	@ManyToMany
 	@JoinColumn(columnName = "acc_id", mappedByColumn = "id", mappedByTable = "dummy_account")
 	private int acc_id;
 
 	@Id
+	@OneToOne
 	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
+	private int user_id;
+}
+
+@Entity
+class DummyInvalidRelationTable {
+	@Id
+	@JoinColumn(columnName = "acc_id", mappedByColumn = "id", mappedByTable = "dummy_account")
+	private int acc_id;
+
+	private int user_id;
+}
+
+@Entity
+class DummyInvalidMapTable {
+	@Id
+	@ManyToMany
+	@JoinColumn(columnName = "acc_id", mappedByTable = "dummy_account")
+	private int acc_id;
+
 	private int user_id;
 }

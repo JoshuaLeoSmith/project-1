@@ -123,11 +123,11 @@ public class MetaModel<T> {
 	}
 
 	public String getSimpleClassName() {
-		return clazz.getSimpleName().toLowerCase();
+		return clazz.getSimpleName();
 	}
 
 	public String getClassName() {
-		return clazz.getName(); // reutrns the package of where the class came from as well
+		return clazz.getName(); // returns the package of where the class came from as well
 	}
 	
 	public String getTableName() {
