@@ -21,11 +21,11 @@ basic crud operations
 
 
 
-- insert
+- insert -> done
 	- new row
-- update
+- update 
 	- whole row (which column plus value to search for)
-- delete
+- delete -> done
 	- delete row (which column plus value to search for)
 - find
 	- rows (which column plus value to search for)
