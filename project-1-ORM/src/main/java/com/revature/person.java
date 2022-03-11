@@ -22,8 +22,7 @@ public class person {
 	@Exclude
 	protected int maxAccessLevel=2;
 	@Exclude
-	protected int minAccessLevel=0;
-	
+	protected int minAccessLevel=0;	
 	@Id(serial=true)
 	protected int userID;
 	@Column(unique=true,nullable=false)
