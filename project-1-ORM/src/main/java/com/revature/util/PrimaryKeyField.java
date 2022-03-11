@@ -23,7 +23,7 @@ public class PrimaryKeyField implements GenericField {
 	}
 	
 	public String getName() {
-		return field.getName();
+		return field.getName().toLowerCase();
 	}
 	
 	// return the TYPE of the field that's annotated
