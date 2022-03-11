@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
+import com.revature.dao.DMLDao;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
 
 
 public class ServicesImpl implements IServices {
 
-	private static TestDao td = new TestDao();
+	private static DMLDao td = new DMLDao();
 	
 	
 	//@Override
@@ -57,20 +58,6 @@ public class ServicesImpl implements IServices {
 		// this should return the id of the new row created, or -1 if failed.
 	}
 	
-	public static void main(String[] args) {
-		IServices is = new ServicesImpl();
-		//TesterClass t = new TesterClass("joshua224", "pwd1234f", 214.44);
-		//TesterClass t1 = new TesterClass();
-		//System.out.println(is.insert(t1, true));
-		//is.insert(new TesterClass("josh ua111", "pwd1", 214.44), true);
-		//is.insert(new TesterClass("jos hua21", "pwd2", 214.44), true);
-		//is.insert(new TesterClass("joshua31", "pwd3", 214.44), true);
-		//is.insert(new TesterClass("joshua41", "pwd4", 214.44), true);
-		//is.insert(new TesterClass("joshua51", "pw5", 214.44), true);
-		//is.remove(TesterClass.class, 39 , false);
-		is.remove(TesterClass.class, "id > 51", true);
-		System.out.println("program has ended");
-	}
 	
 	@Override
 	public int remove(Class <?> clazz, int id, boolean save) {
