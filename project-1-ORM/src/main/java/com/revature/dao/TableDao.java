@@ -201,6 +201,12 @@ public class TableDao {
 			String columnName = rs.getString("column_name");
 			currentColumns.add(columnName);
 		}
+		if (currentColumns.size() == 0) {
+			String createTable = "create table if not exists \"" + TableDao.schema + "\".\"" + name + "\"()";
+			PreparedStatement createStatment = TableDao.conn.prepareStatement(createTable);
+			// System.out.println(createStatment.toString());
+			createStatment.execute();
+		}
 
 		// System.out.println(currentColumns);
 		// System.out.println(newColumns);
@@ -378,6 +384,10 @@ public class TableDao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
+
+	}
+
+	public static void addForeignKeys(MetaModel<?> table) {
 	}
 
 	public static void main(String[] args) throws IllegalAccessException, SQLException {
