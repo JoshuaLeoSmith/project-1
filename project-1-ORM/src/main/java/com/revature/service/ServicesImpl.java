@@ -88,7 +88,7 @@ public class ServicesImpl implements IServices {
 		// this should return the id of the row deleted, or -1 if failed.
 		
 	}
-	
+		
 	@Override
 	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save) {
 		
@@ -105,7 +105,28 @@ public class ServicesImpl implements IServices {
 		// return TableDao.removeFromTable(where) 
 		// this should return an arraylist of ids which were deleted
 	}
-	     
+	
+	@Override
+	public ArrayList<Object> find(Class<?> clazz, String where){
+		
+		//MetaModel m = MetaModel.of(clazz);
+		
+	
+		return td.find(clazz, where);
+		
+		
+	}
+	
+	
+	@Override
+	public Object findByPk(Class<?> clazz, int id) {
+		
+		
+		
+		return null;
+	}
+	
+
 	@Override 
 	public int rollback() {
 		// will rollback to last commit/savepoint/rollback

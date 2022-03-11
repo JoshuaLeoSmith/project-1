@@ -16,6 +16,10 @@ public interface IServices {
 
 	int create(String tableName, Class<?> clazz);
 
+	ArrayList<Object> find(Class<?> clazz, String where);
+
+	Object findByPk(Class<?> clazz, int id);
+
 	
 	
 	
