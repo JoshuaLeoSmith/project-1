@@ -15,16 +15,16 @@ public class ServicesImpl implements IServices {
 	private static DMLDao td = new DMLDao();
 	
 	
-	//@Override
-	//public int create(String tableName, Class<?> clazz) {
-		//try {
-			//TableDao.insert(tableName, MetaModel.of(clazz));
-	//		return 1;
-		//} //catch (IllegalAccessException | SQLException e) {
-			//e.printStackTrace();
-			//return -1;
-		//}
-	//}
+	@Override
+	public int create(Class<?> clazz) {
+		try {
+			TableDao.insert(MetaModel.of(clazz));
+			return 1;
+		} catch (IllegalAccessException | SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
 	
 	
 	@Override
@@ -60,7 +60,7 @@ public class ServicesImpl implements IServices {
 	
 	
 	@Override
-	public int remove(Class <?> clazz, int id, boolean save) {
+	public int removeByPk(Class <?> clazz, int id, boolean save) {
 		
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
@@ -96,9 +96,7 @@ public class ServicesImpl implements IServices {
 	@Override
 	public ArrayList<Object> find(Class<?> clazz, String where){
 		
-		//MetaModel m = MetaModel.of(clazz);
 		
-	
 		return td.find(clazz, where);
 		
 		
@@ -107,10 +105,10 @@ public class ServicesImpl implements IServices {
 	
 	@Override
 	public Object findByPk(Class<?> clazz, int id) {
+		MetaModel m = MetaModel.of(clazz);
+		String pkName = m.getPrimaryKey().getColumnName();
 		
-		
-		
-		return null;
+		return td.findByPk(clazz, id, pkName);
 	}
 	
 
@@ -135,6 +133,72 @@ public class ServicesImpl implements IServices {
 		return -1;
 		// return tableDao.commit()
 		// this should return 1 if successful, -1 if unsuccessful
+	}
+
+
+	@Override
+	public void alter(Class<?> clazz) {
+		
+		MetaModel m = MetaModel.of(clazz);
+		
+		try {
+			TableDao.alter(m);
+		} catch (IllegalAccessException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	@Override
+	public void truncate(Class<?> clazz) {
+		
+		MetaModel m = MetaModel.of(clazz);
+		
+		try {
+			TableDao.truncate(m);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	@Override
+	public void drop(Class<?> clazz) {
+	MetaModel m = MetaModel.of(clazz);
+		
+		try {
+			TableDao.drop(m);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+
+	@Override
+	public void renameTable(Class<?> clazz, String oldName) {
+		
+	MetaModel m = MetaModel.of(clazz);
+		
+		try {
+			TableDao.renameTable(m, oldName);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	@Override
+	public void renameColumn(Class<?> clazz, String oldName, String newName) {
+		MetaModel m = MetaModel.of(clazz);
+		
+		try {
+			TableDao.renameColumn(m, oldName, newName);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 		
 }

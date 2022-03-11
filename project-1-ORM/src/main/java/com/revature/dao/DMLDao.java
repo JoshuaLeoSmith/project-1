@@ -1,4 +1,9 @@
 package com.revature.dao;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -71,8 +76,9 @@ public class DMLDao {
 				stmt = conn.prepareStatement(sql);
 				stmt.execute();
 				logger.info("Successfully inserted data with id" + id + "... Committed.");
+			}else {
+				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
 			}
-			logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
 			return id;
 		
 		} catch(SQLException e) {
@@ -131,9 +137,10 @@ public class DMLDao {
 			ArrayList<Integer> removed = new ArrayList<Integer>();
 			if((rs = stmt.executeQuery()) != null) {
 				while(rs.next()) {
-					rs.next();
+					
 				
 					removed.add(rs.getInt(pkName));
+					
 				}
 			}
 			
@@ -167,19 +174,8 @@ public class DMLDao {
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
-			
-			
-			ResultSet rs;
-			ArrayList<Object> found = new ArrayList<Object>();
-			if((rs = stmt.executeQuery()) != null) {
-				while(rs.next()) {
-					rs.next();
-				
-					found.add(rs.getInt(3));
-				}
-			} 
-			
-		return null;
+					
+			return null;
 			
 		} catch(SQLException e) {
 			logger.error("SQLException thrown... cannot access the database...");
@@ -192,7 +188,68 @@ public class DMLDao {
 	}
 	
 	
-	public Object findByPk(String tableName, String where) {
+	public Object findByPk(Class<?> clazz, int id, String pkName) {
+		
+		try{
+			
+			String schema = ConnectionUtil.getSchema();
+			
+			String sql = "SELECT * FROM " + schema + "." + clazz.getAnnotation(Entity.class).tableName() + " WHERE " + pkName + " = " + id;
+			
+			PreparedStatement stmt = this.conn.prepareStatement(sql);
+			
+			ResultSet rs;
+			
+			if((rs = stmt.executeQuery()) != null) {
+				rs.next();
+				try {
+					Constructor[] cons = clazz.getConstructors();
+					Constructor c = cons[2];
+					int parameterCount = c.getParameterCount();	
+					Parameter[] parameters = c.getParameters();
+					Object[] values = new Object[parameterCount];
+					
+					int count = 1;
+					for(Parameter p : parameters) {
+						String t = p.getParameterizedType().getTypeName();
+						if(t.equals("int")) {
+							values[count-1] = rs.getInt(count);
+						}else if(t.equals("class java.lang.String")) {
+							values[count-1] = rs.getString(count);
+						}else if(t.equals("double")) {
+							values[count-1] = rs.getDouble(count);
+						} else if(t.equals("byte")) {
+							values[count-1] = rs.getByte(count);
+						} else if(t.equals("short")) {
+							values[count-1] = rs.getShort(count);
+						}else if (t.equals("long")) {
+							values[count-1] = rs.getLong(count);
+						}else if (t.equals("boolean")) {
+							values[count-1] = rs.getBoolean(count);
+						}else if (t.equals("char")) {
+							values[count-1] = rs.getString(count);
+						}else {
+							values[count-1] = rs.getObject(count);
+						}
+						
+						//System.out.println(values[count-1].getClass().getName());
+						count++;
+					}
+					Object ro = c.newInstance(values);
+					
+					return ro;
+				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+			
+		} catch(SQLException e) {
+			logger.error("SQLException thrown... cannot access the database...");
+			e.printStackTrace();
+			return null;
+		}
+		
 		
 		return null;
 	}
