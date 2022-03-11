@@ -14,7 +14,7 @@ public interface IServices {
 	
 	public int rollback();
 
-	int create(String tableName, Class<?> clazz);
+	//int create(String tableName, Class<?> clazz);
 
 	ArrayList<Object> find(Class<?> clazz, String where);
 
