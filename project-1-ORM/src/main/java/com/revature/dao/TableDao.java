@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -308,10 +309,13 @@ public class TableDao {
 					alterSqlNull+=" set not null";
 				}
 				if(myField.isUnique()) {
-					alterSqlUnique+=" Drop CONSTRAINT if exists \""+fieldName+"_unique\";";	 
+					
+					/*alterSqlUnique+=" Drop CONSTRAINT if exists \""+fieldName+"_unique\";";	 
 					myStatment= conn.prepareStatement(alterSqlUnique);
 					System.out.println(myStatment.toString());
-					myStatment.execute();
+					boolean constraintExisted = myStatment.execute();
+					System.out.println("Existed: "+constraintExisted);*/
+					
 					alterSqlUnique=sql;
 					alterSqlUnique+=" ADD CONSTRAINT \""+fieldName+"_unique\" UNIQUE (\""+fieldName+"\");";					
 				}
@@ -348,8 +352,13 @@ public class TableDao {
 				
 				myStatment= conn.prepareStatement(alterSqlNull);
 				myStatment.execute();
-				myStatment= conn.prepareStatement(alterSqlUnique);
-				myStatment.execute();
+				Savepoint TrySqlUnique = conn.setSavepoint("TrySqlUnique");
+				try {
+					myStatment= conn.prepareStatement(alterSqlUnique);
+					myStatment.execute();
+				} catch (SQLException e) {
+					conn.rollback(TrySqlUnique);
+				}
 				myStatment= conn.prepareStatement(SQLDropSerial);
 				myStatment.execute();
 				myStatment= conn.prepareStatement(alterSqlDefault);
