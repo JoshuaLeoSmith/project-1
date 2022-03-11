@@ -12,18 +12,24 @@ public class ForeignKeyField implements GenericField {
 	
 	// constructor
 	public ForeignKeyField(Field field) {
+		JoinColumn anno = field.getAnnotation(JoinColumn.class);
 		
 		// check if it has the annotation we're looking for 
-		if (field.getAnnotation(JoinColumn.class) == null) { // if it's NOT equal to @Column...
+		if (anno == null) { // if it's NOT equal to @Column...
 			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + getName() + 
 					" is not annotated with @JoinColumn");
+		} else if (anno.mappedByColumn().equals("") || anno.mappedByTable().equals("")) {
+			throw new IllegalStateException("Provided field " + getName() + 
+					" needs to have a mappedbyColumn and mappedby");
 		}
+		
+		
 		
 		this.field = field;
 	}
 	
 	public String getName() {
-		return field.getName();
+		return field.getName().toLowerCase();
 	}
 	
 	// return the TYPE of the field that's annotated

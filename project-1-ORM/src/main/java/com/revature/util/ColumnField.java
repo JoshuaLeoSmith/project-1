@@ -35,7 +35,7 @@ public class ColumnField implements GenericField {
 	}
 	
 	public String getName() {
-		return field.getName();
+		return field.getName().toLowerCase();
 	}
 	
 

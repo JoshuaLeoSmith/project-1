@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import com.revature.annotations.*;
 
-@Entity(tableName="tester_class_table")
+@Entity(tableName="josh_tester_table")
 public class TesterClass implements Serializable {
 
 	@Column(columnName="username")
@@ -19,9 +19,7 @@ public class TesterClass implements Serializable {
 	@Id(columnName="id")
 	private int id;
 	
-	public TesterClass() {
-		
-	}
+	
 	
 	public TesterClass(int id, String username, String pwd, double balance) {
 		super();
@@ -37,7 +35,9 @@ public class TesterClass implements Serializable {
 		this.pwd = pwd;
 		this.balance = balance;
 	}
-
+	public TesterClass() {
+		
+	}
 	public String getUsername() {
 		return username;
 	}
