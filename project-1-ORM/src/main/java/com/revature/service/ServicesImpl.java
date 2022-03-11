@@ -14,16 +14,16 @@ public class ServicesImpl implements IServices {
 	private static TestDao td = new TestDao();
 	
 	
-	@Override
-	public int create(String tableName, Class<?> clazz) {
-		try {
-			TableDao.insert(tableName, MetaModel.of(clazz));
-			return 1;
-		} catch (IllegalAccessException | SQLException e) {
-			e.printStackTrace();
-			return -1;
-		}
-	}
+	//@Override
+	//public int create(String tableName, Class<?> clazz) {
+		//try {
+			//TableDao.insert(tableName, MetaModel.of(clazz));
+	//		return 1;
+		//} //catch (IllegalAccessException | SQLException e) {
+			//e.printStackTrace();
+			//return -1;
+		//}
+	//}
 	
 	
 	@Override
