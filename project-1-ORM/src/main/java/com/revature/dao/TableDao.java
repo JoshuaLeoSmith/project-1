@@ -12,6 +12,7 @@ import com.revature.person;
 import com.revature.util.ColumnField;
 //import com.revature.inspection.ClassInspector;
 import com.revature.util.ConnectionUtil;
+import com.revature.util.ForeignKeyField;
 import com.revature.util.MetaModel;
 import com.revature.util.PrimaryKeyField;
 
@@ -379,15 +380,46 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void renameColumn(MetaModel<?> table, String oldName, String newName) {
+	public static void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
+		String sql = "Alter table \"" + TableDao.schema + "\".\"" + name + "\" rename column \"" + TableDao.schema
+				+ "\".\"" + oldName + "\" to \"" + TableDao.schema + "\".\"" + newName + "\";";
+		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
+		myStatment.execute();
 
 	}
 
-	public static void addForeignKeys(MetaModel<?> table) {
+	public static void addForeignKeys(MetaModel<?> table) throws SQLException {
+		String name = table.getTableName();
+		if (name.equals("")) {
+			name = table.getSimpleClassName();
+		}
+		List<ForeignKeyField> fks = table.getForeignKeys();
+		boolean manyToMany = false;
+		for (ForeignKeyField key : fks) {
+			String keyName = key.getColumnName();
+			if (keyName.equals("")) {
+				keyName = key.getName();
+			}
+
+			if (manyToMany) {
+				// TODO
+				// Create a join table with values keyName and getMappedByColumn
+				// Add a column to table with value key
+				// Add a column to key.getMappedByTable with value key.getMappedByColumn
+			} else {
+				String ForeignSQL = "alter table \"" + TableDao.schema + "\".\"" + name + "\" add foreign key (\""
+						+ keyName + "\") references \"" + key.getMappedByTable() + "\" (\"" + key.getMappedByColumn()
+						+ "\");";
+				PreparedStatement myStatment = TableDao.conn.prepareStatement(ForeignSQL);
+				myStatment.execute();
+			}
+
+		}
+
 	}
 
 	public static void main(String[] args) throws IllegalAccessException, SQLException {
@@ -397,3 +429,4 @@ public class TableDao {
 	}
 
 }
+
