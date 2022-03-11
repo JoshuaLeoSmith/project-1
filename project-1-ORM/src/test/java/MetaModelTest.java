@@ -1,4 +1,5 @@
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -83,7 +84,7 @@ public class MetaModelTest {
 	@Test(expected = RuntimeException.class)
 	public void testGetColumnsKeysOnly() {
 		MetaModel<Class<?>> meta = MetaModel.of(DummyProjectTable.class);
-		System.out.println("Bob");
+
 		meta.getColumns().forEach(System.out::println);
 	}
 
@@ -412,10 +413,10 @@ public class MetaModelTest {
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetAllFieldsMissingColumns");
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetAllFieldsMissingColumns");
 		}
 	}
 
@@ -444,10 +445,36 @@ public class MetaModelTest {
 			assertTrue(meta.getAllFields().containsAll(columns));
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey");
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Failed testGetColumnsSimple");
+			throw new AssertionError("Failed testGetAllFieldsMissingPrimaryKey");
+		}
+	}
+
+	@Test
+	public void testGetAllFieldsJoinTable() {
+		MetaModel<Class<?>> meta = MetaModel.of(DummyJoinTable.class);
+
+		try {
+			meta.getColumns();
+		} catch (RuntimeException e) {
+		}
+		meta.getPrimaryKey();
+		meta.getForeignKeys();
+		
+		try {
+			List<GenericField> columns = Arrays.asList(
+					new ColumnField(DummyNoPKTable.class.getDeclaredField("username")),
+					new ForeignKeyField(DummyNoPKTable.class.getDeclaredField("id")));
+
+			assertTrue(meta.getAllFields().containsAll(columns));
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+			throw new AssertionError("Failed testGetAllFieldsJoinTable");
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			throw new AssertionError("Failed testGetAllFieldsJoinTable");
 		}
 	}
 
@@ -465,6 +492,21 @@ public class MetaModelTest {
 		MetaModel<Class<?>> meta = MetaModel.of(DummyTable.class);
 
 		assertEquals(meta.getClassName(), "DummyTable");
+	}
+
+	// getTableName
+	@Test
+	public void testGetTableNameDefined() {
+		MetaModel<Class<?>> meta = MetaModel.of(DummyJoinTable.class);
+
+		assertEquals(meta.getTableName(), "test");
+	}
+
+	@Test
+	public void testGetTableNameUndefined() {
+		MetaModel<Class<?>> meta = MetaModel.of(DummyProjectTable.class);
+
+		assertNotEquals(meta.getTableName(), "test");
 	}
 }
 
@@ -512,5 +554,15 @@ class DummyProjectTable {
 
 	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
 	private int user_id;
+}
 
+@Entity(tableName = "test")
+class DummyJoinTable {
+	@Id
+	@JoinColumn(columnName = "acc_id", mappedByColumn = "id", mappedByTable = "dummy_account")
+	private int acc_id;
+
+	@Id
+	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
+	private int user_id;
 }

@@ -123,7 +123,7 @@ public class MetaModel<T> {
 	}
 
 	public String getSimpleClassName() {
-		return clazz.getSimpleName();
+		return clazz.getSimpleName().toLowerCase();
 	}
 
 	public String getClassName() {
