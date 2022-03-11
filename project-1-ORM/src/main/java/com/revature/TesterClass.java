@@ -1,4 +1,4 @@
-package com.revature.service;
+package com.revature;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -1,23 +1,21 @@
-package com.revature.service;
+package com.revature.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-
 import org.apache.log4j.Logger;
-
 import com.revature.annotations.Entity;
 import com.revature.util.ConnectionUtil;
 
 
-public class TestDao {
+public class DMLDao {
 	
-	private static Logger logger = Logger.getLogger(TestDao.class);
+	private static Logger logger = Logger.getLogger(DMLDao.class);
 	public Connection conn;
 	
-	public TestDao() {
+	public DMLDao() {
 		this.conn = ConnectionUtil.getConnection();
 		try {
 			conn.setAutoCommit(false);
