@@ -86,7 +86,6 @@ public class MetaModelTest {
 		MetaModel<Class<?>> meta = MetaModel.of(DummyProjectTable.class);
 
 		meta.getColumns().forEach(System.out::println);
-		;
 	}
 
 	@Test

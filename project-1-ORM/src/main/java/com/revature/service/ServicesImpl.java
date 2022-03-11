@@ -2,31 +2,29 @@ package com.revature.service;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
-import com.revature.annotations.Id;
+import com.revature.dao.DMLDao;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
 
 
 public class ServicesImpl implements IServices {
 
-	private static TestDao td = new TestDao();
+	private static DMLDao td = new DMLDao();
 	
-	@Override
-	public int create(String tableName, Class<?> clazz) {
-		try {
-			TableDao.insert(tableName, MetaModel.of(clazz));
-			return 1;
-		} catch (IllegalAccessException | SQLException e) {
-			e.printStackTrace();
-			return -1;
-		}
-	}
+	
+	//@Override
+	//public int create(String tableName, Class<?> clazz) {
+		//try {
+			//TableDao.insert(tableName, MetaModel.of(clazz));
+	//		return 1;
+		//} //catch (IllegalAccessException | SQLException e) {
+			//e.printStackTrace();
+			//return -1;
+		//}
+	//}
 	
 	
 	@Override
@@ -60,41 +58,62 @@ public class ServicesImpl implements IServices {
 		// this should return the id of the new row created, or -1 if failed.
 	}
 	
-	public static void main(String[] args) {
-		IServices is = new ServicesImpl();
-		TesterClass t = new TesterClass("joshua224", "pwd1234f", 214.44);
-		System.out.println(is.insert(t, true));
-	
-	}
 	
 	@Override
-	public int remove(String tableName, int id, boolean save) {
+	public int remove(Class <?> clazz, int id, boolean save) {
 		
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
 		
+		MetaModel m = MetaModel.of(clazz);
 		
-		
-		return td.remove(tableName, id, save);
+		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		String pkName = m.getPrimaryKey().getColumnName();
+	
+		return td.remove(tableName, id, pkName, save);
 		// return TableDao.removeFromTable(id) 
 		// this should return the id of the row deleted, or -1 if failed.
 		
 	}
-	
+		
 	@Override
-	public int remove(String tableName, String where, boolean save) {
+	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save) {
 		
 		// String where is the condition that will be used to determine what will
 		// 		be removed. (ex. age > 4) .
 		// boolean save indicates whether the changes will be committed or not
 		
+		MetaModel m = MetaModel.of(clazz);
 		
-		return -1;
-		// return TableDao.removeFromTable(where) 
-		// this should return the id of the row deleted, or -1 if failed.
-	}
-	     
+		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		String pkName = m.getPrimaryKey().getColumnName();
 	
+		return td.remove(tableName, where, pkName, save);
+		// return TableDao.removeFromTable(where) 
+		// this should return an arraylist of ids which were deleted
+	}
+	
+	@Override
+	public ArrayList<Object> find(Class<?> clazz, String where){
+		
+		//MetaModel m = MetaModel.of(clazz);
+		
+	
+		return td.find(clazz, where);
+		
+		
+	}
+	
+	
+	@Override
+	public Object findByPk(Class<?> clazz, int id) {
+		
+		
+		
+		return null;
+	}
+	
+
 	@Override 
 	public int rollback() {
 		// will rollback to last commit/savepoint/rollback
