@@ -8,6 +8,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revature.Account;
 import com.revature.person;
 import com.revature.util.ColumnField;
 //import com.revature.inspection.ClassInspector;
@@ -52,6 +53,54 @@ public class TableDao {
 		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
 				|| (myField.getType() == java.time.LocalDate.class)) {
 			modifications += " date";
+		} else {
+			throw new IllegalArgumentException("Invalid data type for a Column key");
+		}
+		return modifications;
+	}
+
+	public static String getSQLType(PrimaryKeyField myField) {
+		String modifications = "";
+
+		if (myField.getType() == int.class) {
+			modifications += " int";
+		} // Test against Integer
+		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)) {
+			modifications += " smallint";
+		} else if (myField.getType() == long.class) {
+			modifications += " bigint";
+		} else if (myField.getType() == boolean.class) {
+			modifications += " boolean";
+		} else if (myField.getType() == char.class) {
+			modifications += " char(1)";
+		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
+				|| (myField.getType() == java.time.LocalDate.class)) {
+			modifications += " date";
+		} else {
+			throw new IllegalArgumentException("Invalid data type for a Primary key");
+		}
+		return modifications;
+	}
+
+	public static String getSQLType(ForeignKeyField myField) {
+		String modifications = "";
+
+		if (myField.getType() == int.class) {
+			modifications += " int";
+		} // Test against Integer
+		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)) {
+			modifications += " smallint";
+		} else if (myField.getType() == long.class) {
+			modifications += " bigint";
+		} else if (myField.getType() == boolean.class) {
+			modifications += " boolean";
+		} else if (myField.getType() == char.class) {
+			modifications += " char(1)";
+		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
+				|| (myField.getType() == java.time.LocalDate.class)) {
+			modifications += " date";
+		} else {
+			throw new IllegalArgumentException("Invalid data type for a foreign key");
 		}
 		return modifications;
 	}
@@ -78,6 +127,7 @@ public class TableDao {
 		return modifications;
 
 	}
+
 
 	public static void insert(MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException {
 		String name = allFieldsInTable.getTableName();
@@ -112,7 +162,7 @@ public class TableDao {
 		String PfieldName = "\"" + PField.getColumnName() + "\"";// Correct the naming convention
 		if (PField.getColumnName().equals("")) {
 
-			PfieldName = PField.getName();// Correct the naming convention
+			PfieldName = "\"" + PField.getName() + "\"";// Correct the naming convention
 		}
 		sql += PfieldName;
 
@@ -172,7 +222,7 @@ public class TableDao {
 		// Delete all nonexisting
 		String sql = "SELECT column_name FROM information_schema.columns WHERE table_schema = '" + TableDao.schema
 				+ "' AND table_name  = '" + name + "';";
-		// System.out.println(sql);
+		//		System.out.println(sql);
 		String fieldName;
 		TableDao.conn.setAutoCommit(false);
 
@@ -205,42 +255,86 @@ public class TableDao {
 		if (currentColumns.size() == 0) {
 			String createTable = "create table if not exists \"" + TableDao.schema + "\".\"" + name + "\"()";
 			PreparedStatement createStatment = TableDao.conn.prepareStatement(createTable);
-			// System.out.println(createStatment.toString());
+			//			System.out.println(createStatment.toString());
 			createStatment.execute();
 		}
 
-		// System.out.println(currentColumns);
-		// System.out.println(newColumns);
+		//		System.out.println("The current columns " + currentColumns);
+		//		System.out.println(newColumns);
 
 		List<String> badColumns = new ArrayList<>(currentColumns);
 		badColumns.removeAll(newColumns);
-		// System.out.println("Bad columns"+badColumns);
+		//		System.out.println("Bad columns" + badColumns);
 
 		fieldName = PfieldName;
 		sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"";
 		if (!currentColumns.contains(fieldName)) {
 			sql += " add";
-		} else {
-			sql += " alter";
-		}
-		sql += " column \"" + fieldName + "\"";
+			sql += " column \"" + fieldName + "\"";
 
-		if (PField.isSerial()) {
-			sql += " serial";
-		} else if (PField.getType() == int.class) {
-			sql += " int";
-		} else if ((PField.getType() == byte.class) || (PField.getType() == short.class)) {
-			sql += " smallint";
-		} else if (PField.getType() == long.class) {
-			sql += " bigint";
+			if (PField.isSerial()) {
+				sql += " serial";
+			} else if (PField.getType() == int.class) {
+				sql += " int";
+			} else if ((PField.getType() == byte.class) || (PField.getType() == short.class)) {
+				sql += " smallint";
+			} else if (PField.getType() == long.class) {
+				sql += " bigint";
+			} else {
+				TableDao.conn.rollback();
+				throw new IllegalArgumentException("Invalid data type for a primary key");
+			}
+			sql += " primary key;";
+			myStatment = TableDao.conn.prepareStatement(sql);
+			//			System.out.println(myStatment.toString());
 		} else {
-			TableDao.conn.rollback();
-			throw new IllegalArgumentException("Invalid data type for a primary key");
+			String alterSqlType = sql + " alter" + " column \"" + fieldName + "\"" + " type "
+					+ TableDao.getSQLType(PField) + " using \"" + fieldName + "\"::" + TableDao.getSQLType(PField);
+			String alterSqlNull = sql + " alter column \"" + fieldName + "\"";
+			String alterSqlUnique;
+			String SQLDropSerial = "";
+			alterSqlNull += " set not null";
+			alterSqlUnique = sql;
+			alterSqlUnique += " add constraint \"" + fieldName + "_unique\" unique (\"" + fieldName + "\");";
+
+			if (PField.isSerial()) {
+				String CreateSequence = "CREATE SEQUENCE if not exists \"" + TableDao.schema + "\".seq_" + fieldName
+						+ " owned by \"" + TableDao.schema + "\".\"" + name + "\".\"" + fieldName + "\"";
+				String SelectSequence = "SELECT setval('\"" + TableDao.schema + "\".seq_" + fieldName
+						+ "', coalesce(max(\"" + fieldName + "\"), 0) + 1, false) from " + "\"" + TableDao.schema
+						+ "\".\"" + name + "\";";
+				String AlterSequence = "ALTER TABLE " + "\"" + TableDao.schema + "\".\"" + name + "\" alter column \""
+						+ fieldName + "\" set default nextval('" + TableDao.schema + ".seq_" + fieldName + "');";
+				myStatment = TableDao.conn.prepareStatement(CreateSequence);
+				//				System.out.println(myStatment.toString());
+				myStatment.execute();
+				myStatment = TableDao.conn.prepareStatement(SelectSequence);
+				//				System.out.println(myStatment.toString());
+				myStatment.execute();
+				myStatment = TableDao.conn.prepareStatement(AlterSequence);
+				//				System.out.println(myStatment.toString());
+				myStatment.execute();
+			} else {
+				SQLDropSerial = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"" + " alter column \""
+						+ fieldName + "\" drop default;";
+			}
+			myStatment = TableDao.conn.prepareStatement(alterSqlType);
+			myStatment.execute();
+			myStatment = TableDao.conn.prepareStatement(alterSqlNull);
+			myStatment.execute();
+			Savepoint TrySqlUnique = TableDao.conn.setSavepoint("TrySqlUnique");
+			try {
+				myStatment = TableDao.conn.prepareStatement(alterSqlUnique);
+				myStatment.execute();
+			} catch (SQLException e) {
+				TableDao.conn.rollback(TrySqlUnique);
+			} finally {
+				TableDao.conn.releaseSavepoint(TrySqlUnique);
+			}
+			myStatment = TableDao.conn.prepareStatement(SQLDropSerial);
 		}
-		sql += " primary key;";
-		myStatment = TableDao.conn.prepareStatement(sql);
-		// System.out.println(myStatment.toString());
-		// myStatment.execute();
+		myStatment.execute();
+
 
 		for (String columnName : badColumns) {
 			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\" DROP COLUMN if exists \"" + columnName
@@ -252,9 +346,9 @@ public class TableDao {
 		List<String> columnsToAdd = new ArrayList<>(newColumns);
 		columnsToAdd.removeAll(currentColumns);
 
-		// System.out.println("Columns to add"+columnsToAdd);
+		//		System.out.println("Columns to add" + columnsToAdd);
 
-		// System.out.println("-----------------");
+		//		System.out.println("-----------------");
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
 			fieldName = TableDao.getSQLName(myField);
 			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"";
@@ -265,7 +359,7 @@ public class TableDao {
 					sql += " " + TableDao.getSQLType(myField) + " ";
 				}
 				sql += TableDao.getSQLModification(myField);
-				// System.out.println(sql);
+				//				System.out.println(sql);
 				myStatment = TableDao.conn.prepareStatement(sql);
 			} else {
 				String alterSqlType = sql + " alter" + " column \"" + fieldName + "\"" + " type "
@@ -305,13 +399,13 @@ public class TableDao {
 					String AlterSequence = "ALTER TABLE " + "" + TableDao.schema + "." + name + " alter column \""
 							+ fieldName + "\" set default nextval('" + TableDao.schema + ".seq_" + fieldName + "');";
 					myStatment = TableDao.conn.prepareStatement(CreateSequence);
-					// System.out.println(myStatment.toString());
+					//					System.out.println(myStatment.toString());
 					myStatment.execute();
 					myStatment = TableDao.conn.prepareStatement(SelectSequence);
-					// System.out.println(myStatment.toString());
+					//					System.out.println(myStatment.toString());
 					myStatment.execute();
 					myStatment = TableDao.conn.prepareStatement(AlterSequence);
-					// System.out.println(myStatment.toString());
+					//					System.out.println(myStatment.toString());
 					myStatment.execute();
 				} else {
 					SQLDropSerial = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"" + " alter column \""
@@ -322,10 +416,12 @@ public class TableDao {
 				} else {
 					alterSqlDefault += " set default \'" + myField.getDefaultValue() + "\'";
 				}
-				/*
-				 * System.out.println(alterSqlNull); System.out.println(alterSqlUnique);
-				 * System.out.println(alterSqlDefault); System.out.println(SQLDropSerial);
-				 */
+
+				//				System.out.println(alterSqlNull);
+				//				System.out.println(alterSqlUnique);
+				//				System.out.println(alterSqlDefault);
+				//				System.out.println(SQLDropSerial);
+
 				myStatment = TableDao.conn.prepareStatement(alterSqlType);
 				myStatment.execute();
 				myStatment = TableDao.conn.prepareStatement(alterSqlNull);
@@ -343,6 +439,7 @@ public class TableDao {
 				myStatment.execute();
 				myStatment = TableDao.conn.prepareStatement(alterSqlDefault);
 			}
+			//			myStatment.execute();
 			myStatment.execute();
 		}
 		TableDao.conn.commit();
@@ -392,39 +489,135 @@ public class TableDao {
 
 	}
 
-	public static void addForeignKeys(MetaModel<?> table) throws SQLException {
+	public static void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
 		List<ForeignKeyField> fks = table.getForeignKeys();
-		boolean manyToMany = false;
+		boolean manyToMany = true;
+		List<String> keys = new ArrayList<>();
+
+		// List<String> currentColumns = new ArrayList<>();
+
+		String sql = "SELECT column_name FROM information_schema.columns WHERE table_schema = '" + TableDao.schema
+				+ "' AND table_name  = '" + name + "';";
+		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
+		ResultSet rs = myStatment.executeQuery();
+		while (rs.next()) {
+			String columnName = rs.getString("column_name");
+			keys.add(columnName);
+		}
+		//		System.out.println(keys.toString());
 		for (ForeignKeyField key : fks) {
 			String keyName = key.getColumnName();
 			if (keyName.equals("")) {
 				keyName = key.getName();
 			}
-
+			if (keys.contains(key.getMappedByColumn())) {
+				//				System.out.println("Skipping: " + keyName);
+				continue;
+			} else {
+				keys.add(keyName);
+				//				System.out.println("Adding " + keyName);
+				//				System.out.println("New list: " + keys.toString());
+			}
 			if (manyToMany) {
 				// TODO
 				// Create a join table with values keyName and getMappedByColumn
-				// Add a column to table with value key
-				// Add a column to key.getMappedByTable with value key.getMappedByColumn
+
+				// Create a join table with values keyName and getMappedByColumn
+
+				//create table if not exists project_zero.user_accounts_jt (
+				String createJoinTable = "create table \"" + TableDao.schema + "\".\"" + name + "_"
+						+ key.getMappedByTable() + "\"( ";
+				String otherJoinTable = "create table \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "_"
+						+ name + "\"( ";
+				//				account_owner integer not null references project_zero.users(id) on delete cascade,
+				Class instance;
+				try {
+					//					System.out.println("com.revature." + key.getMappedByTable());
+					instance = Class.forName("com.revature." + key.getMappedByTable());
+				} catch (ClassNotFoundException e) {
+					throw new ClassNotFoundException("The table defined in the foreign key does not exist");
+				}
+				PrimaryKeyField otherKey = MetaModel.of(instance).getPrimaryKey();
+				PrimaryKeyField thisPKey = table.getPrimaryKey();
+				String thisPKeyName = thisPKey.getColumnName();
+				if (thisPKeyName.equals("")) {
+					thisPKeyName = thisPKey.getName();
+				}
+				String otherPKeyName = otherKey.getColumnName();
+				if (otherPKeyName.equals("")) {
+					otherPKeyName = otherKey.getName();
+				}
+				createJoinTable += "\"" + keyName + "\" " + TableDao.getSQLType(otherKey) + " not null references \""
+						+ TableDao.schema + "\".\"" + name + "\"(\"" + thisPKeyName + "\") on delete cascade,";
+				otherJoinTable += "\"" + keyName + "\" " + TableDao.getSQLType(otherKey) + " not null references \""
+						+ TableDao.schema + "\".\"" + name + "\"(\"" + thisPKeyName + "\") on delete cascade,";
+
+				// account integer not null references project_zero.accounts(id) on delete
+				// cascade);
+				createJoinTable += "\"" + key.getMappedByColumn() + "\" " + TableDao.getSQLType(table.getPrimaryKey())
+				+ " not null references \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "\"(\""
+				+ otherPKeyName
+				+ "\") on delete cascade);";
+
+				otherJoinTable += "\"" + key.getMappedByColumn() + "\" " + TableDao.getSQLType(table.getPrimaryKey())
+				+ " not null references \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "\"(\""
+				+ otherPKeyName + "\") on delete cascade);";
+				TableDao.conn.setAutoCommit(false);
+				Savepoint joinSave = TableDao.conn.setSavepoint("JoinSave");
+
+				try {
+					PreparedStatement joinStatment = TableDao.conn.prepareStatement(createJoinTable);
+					//					System.out.println(joinStatment.toString());
+					joinStatment.execute();
+					PreparedStatement OtherjoinStatment = TableDao.conn.prepareStatement(otherJoinTable);
+					//					System.out.println(OtherjoinStatment.toString());
+					OtherjoinStatment.execute();
+
+					TableDao.conn.rollback(joinSave);
+					joinStatment = TableDao.conn.prepareStatement(createJoinTable);
+					//					System.out.println(joinStatment.toString());
+					joinStatment.execute();
+
+				} catch (SQLException e) {
+					//					System.out.println("Undoing the tables");
+					//					System.out.println(e.getMessage());
+					TableDao.conn.rollback(joinSave);
+				}
+				finally {
+
+					// TableDao.conn.releaseSavepoint(joinSave);
+					TableDao.conn.commit();
+					TableDao.conn.setAutoCommit(true);
+				}
+
+
+
+				keys.add(key.getMappedByColumn());
 			} else {
 				String ForeignSQL = "alter table \"" + TableDao.schema + "\".\"" + name + "\" add foreign key (\""
 						+ keyName + "\") references \"" + key.getMappedByTable() + "\" (\"" + key.getMappedByColumn()
 						+ "\");";
-				PreparedStatement myStatment = TableDao.conn.prepareStatement(ForeignSQL);
-				myStatment.execute();
+				PreparedStatement foreignStatment = TableDao.conn.prepareStatement(ForeignSQL);
+				//				System.out.println(foreignStatment.toString());
+				foreignStatment.execute();
 			}
 
 		}
 
 	}
 
-	public static void main(String[] args) throws IllegalAccessException, SQLException {
+	public static void main(String[] args) throws IllegalAccessException, SQLException, ClassNotFoundException {
 		MetaModel<Class<?>> bob = MetaModel.of(person.class);
+		MetaModel<Class<?>> steve = MetaModel.of(Account.class);
 		TableDao.insert(bob);
+		TableDao.insert(steve);
+		TableDao.addForeignKeys(bob);
+		TableDao.addForeignKeys(steve);
+		System.out.println("It worked");
 
 	}
 

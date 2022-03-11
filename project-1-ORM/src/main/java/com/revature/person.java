@@ -11,7 +11,11 @@ import java.util.Objects;
 
 import org.apache.log4j.Logger;
 
-import com.revature.annotations.*;
+import com.revature.annotations.Column;
+import com.revature.annotations.Entity;
+import com.revature.annotations.Exclude;
+import com.revature.annotations.Id;
+import com.revature.annotations.JoinColumn;
 
 
 @Entity
@@ -22,7 +26,8 @@ public class person {
 	@Exclude
 	protected int maxAccessLevel=2;
 	@Exclude
-	protected int minAccessLevel=0;	
+	protected int minAccessLevel=0;
+
 	@Id(serial=true)
 	protected int userID;
 	@Column(unique=true,nullable=false)
@@ -32,7 +37,7 @@ public class person {
 	@Column(default_value="0")
 	protected int accessLevel; //0=customer, 1=employee, 2=admin
 	@Column(default_value="false")
-	protected boolean verified=false;	
+	protected boolean verified=false;
 	@Column(unique=true)
 	protected String email;
 	@Column(length=15)
@@ -43,20 +48,20 @@ public class person {
 	protected String address;
 	protected LocalDate dob;
 	@Column(precision=5, scale=2, default_value="0" )
-	protected double balance;	
+	protected double balance;
 	@Column(serial=true )
 	protected int testSerial;
-	@Exclude
+
+	@JoinColumn(mappedByTable = "Account", mappedByColumn = "owners")
 	protected List<Account> accounts;
-	
-	
+
+
 	public person() {
-		logBot.info("Created blank User");		
+		person.logBot.info("Created blank User");
 	}
-	
+
 	public person(person oldPerson) {
-		super();
-		this.userID=oldPerson.userID;		
+		this.userID=oldPerson.userID;
 		this.username = oldPerson.username;
 		this.passwordHash = oldPerson.passwordHash;
 		this.accessLevel = oldPerson.accessLevel;
@@ -67,83 +72,83 @@ public class person {
 		this.lName = oldPerson.lName;
 		this.address = oldPerson.address;
 		this.accounts = oldPerson.accounts;
-		
-		logBot.info("Copied user "+oldPerson.userID);
+
+		person.logBot.info("Copied user "+oldPerson.userID);
 	}
 
 	public person(String username) {
 		this.username = username;
-		this.accessLevel = minAccessLevel;		
+		this.accessLevel = this.minAccessLevel;
 		//this.passwordHash=this.Hasher(password);
-			
-		logBot.info("Created a new user with username "+username);
+
+		person.logBot.info("Created a new user with username "+username);
 	}
 
 	public person(String username, int accessLevel) {
 		this.username = username;
-		this.accessLevel = accessLevel;		
+		this.accessLevel = accessLevel;
 		//this.passwordHash = this.Hasher(password);
-		logBot.info("Created a new user with username "+username+" with access level "+accessLevel);
+		person.logBot.info("Created a new user with username "+username+" with access level "+accessLevel);
 	}
-	
-	
+
+
 	private String Hasher(String phrase) {
 		MessageDigest digest;
 		try {
 			digest = MessageDigest.getInstance("SHA-256");
 			byte[] hash = digest.digest(phrase.getBytes(StandardCharsets.UTF_8));
 			return Base64.getEncoder().encodeToString(hash);
-			
-		} 
+
+		}
 		catch (NoSuchAlgorithmException e) {
-			logBot.warn("No algorithm to hash the passwords");			
+			person.logBot.warn("No algorithm to hash the passwords");
 			e.printStackTrace();
 		}
 		return null;
 	}
-	
+
 	public int upgradeSecurityLevel() {
-		this.setAccessLevel(this.accessLevel++);	
-		logBot.info("Increased securtiy level for user "+this.userID);
+		this.setAccessLevel(this.accessLevel++);
+		person.logBot.info("Increased securtiy level for user "+this.userID);
 		return this.accessLevel;
 	}
-	
+
 	public int downgradeSecurityLevel() {
-		this.setAccessLevel(this.accessLevel--);	
-		logBot.info("Decreased securtiy level for user "+this.userID);
+		this.setAccessLevel(this.accessLevel--);
+		person.logBot.info("Decreased securtiy level for user "+this.userID);
 		return this.accessLevel;
 	}
-	
+
 	public boolean Fire() {
-		this.accessLevel=minAccessLevel;
+		this.accessLevel=this.minAccessLevel;
 		//boolean finished;
-		logBot.info("User "+this.userID+" has beed fired and reduced to a customer");
+		person.logBot.info("User "+this.userID+" has beed fired and reduced to a customer");
 		return true;
 	}
-	
+
 	public boolean approveUser() {
 		this.setVerified(true);
-		logBot.info("Approved account "+this.userID);
-		
+		person.logBot.info("Approved account "+this.userID);
+
 		return true;
 	}
 	public boolean banUser() {
 		this.setVerified(false);
-		
-		logBot.info("Banned account "+this.userID);
-		
-		return true;	
+
+		person.logBot.info("Banned account "+this.userID);
+
+		return true;
 	}
-	
+
 	public boolean removeUser() {
-		
+
 		for(Account acc : this.accounts) {
-			if (acc.getBalance()>0 && acc.getOwners().size()==1) {
-				logBot.warn("Can't delete an user with an account with a positive balanace");
+			if ((acc.getBalance()>0) && (acc.getOwners().size()==1)) {
+				person.logBot.warn("Can't delete an user with an account with a positive balanace");
 				return false;
 			}
 		}
-		
+
 		//this.userID=void; //Keep the ID to remove it from the database
 		this.username = null;
 		this.passwordHash = null;
@@ -155,14 +160,14 @@ public class person {
 		this.lName = null;
 		this.address = null;
 		this.accounts = null;
-		
-		
-		
-		logBot.info("Removed user "+this.userID);
+
+
+
+		person.logBot.info("Removed user "+this.userID);
 		return true;
-		
+
 	}
-	
+
 	public boolean addAcount(Account acc) {
 		List<Account> accounts=this.getAccounts();
 		//System.out.println(accounts.toString());
@@ -175,91 +180,87 @@ public class person {
 		else if(!accounts.contains(acc)) {
 			accounts.add(acc);
 			this.setAccounts(accounts);
-			logBot.info("Added account "+acc.getID()+"to user "+this.userID);
+			person.logBot.info("Added account "+acc.getID()+"to user "+this.userID);
 			return true;
 		}
 		else {
-			logBot.info("User "+this.userID+"already has access to account "+acc.getID());
+			person.logBot.info("User "+this.userID+"already has access to account "+acc.getID());
 			return false;
 		}
-		
+
 	}
-	
-	public boolean removeAcount(Account acc) {		
+
+	public boolean removeAcount(Account acc) {
 		List<Account> accounts=this.getAccounts();
 		if(accounts.contains(acc)) {
 			accounts.remove(acc);
-			this.setAccounts(accounts);	
-			
-			logBot.info("Removed account "+acc.getID()+" from user "+this.userID);
-			return true;		
+			this.setAccounts(accounts);
+
+			person.logBot.info("Removed account "+acc.getID()+" from user "+this.userID);
+			return true;
 		}
 		else {
-			logBot.info("Account "+acc.getID()+" does not belong to user "+this.userID);
+			person.logBot.info("Account "+acc.getID()+" does not belong to user "+this.userID);
 			return false;
 		}
 	}
-	
-	
+
+
 	public static person Login(String username, String password) {
 		person bob=new person(username);
 		bob.setPassword(password);
 		if(bob!=null) {
-			logBot.info("Logged in with username "+username);
+			person.logBot.info("Logged in with username "+username);
 		}
 		return bob;
 	}
-	
+
 	public person createNew() {
-		person bob=null;
-		
-			
-		return bob;
+		return null;
 	}
-	
+
 	public person update() {
-		person bob = null;
-		return bob;
+		return null;
 	}
-	
+
 	public int getUserID() {
-		return userID;
+		return this.userID;
 	}
 
 	public String getUsername() {
-		return username;
+		return this.username;
 	}
 
 	public String getPasswordHash() {
-		return passwordHash;
+		return this.passwordHash;
 	}
 
 	public int getAccessLevel() {
-		return accessLevel;
+		return this.accessLevel;
 	}
 
 	public boolean isVerified() {
-		return verified;
+		return this.verified;
 	}
 
 	public String getEmail() {
-		return email;
+		return this.email;
 	}
 
 	public String getPhoneNumber() {
-		return phoneNumber;
+		return this.phoneNumber;
 	}
 
 	public String getFirstName() {
-		return fName;
+		return this.fName;
 	}
 
 	public String getLastName() {
-		return lName;
+		return this.lName;
 	}
 
 	public String getAddress() {
-		return address;
+		return this.address;
 	}
 
 	public List<Account> getAccounts() {
@@ -267,13 +268,13 @@ public class person {
 	}
 
 	public LocalDate getDob() {
-		return dob;
+		return this.dob;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	public void setDob(LocalDate dob) {
 		this.dob = dob;
@@ -284,21 +285,21 @@ public class person {
 	} //This needs to be set by the dao
 
 	public void setUsername(String username) {
-				this.username = username;
+		this.username = username;
 	}
 
 	public void setPassword(String password) {
 		this.passwordHash = this.Hasher(password);
 	}
-	
+
 	public void setPasswordHash(String password) {
 		this.passwordHash = (password);
 	}
 
 	public void setAccessLevel(int accessLevel) {
-		
-		this.accessLevel = accessLevel;			
-				
+
+		this.accessLevel = accessLevel;
+
 	}
 
 	public void setVerified(boolean verified) {
@@ -329,20 +330,20 @@ public class person {
 		this.accounts = accounts;
 	}
 
-	
-	
+
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(accessLevel, accounts, address, dob, email, fName, lName, maxAccessLevel, minAccessLevel,
-				passwordHash, phoneNumber, userID, username, verified);
+		return Objects.hash(this.accessLevel, this.accounts, this.address, this.dob, this.email, this.fName, this.lName, this.maxAccessLevel, this.minAccessLevel,
+				this.passwordHash, this.phoneNumber, this.userID, this.username, this.verified);
 	}
 
 	@Override
 	public String toString() {
-		return "User [maxAccessLevel=" + maxAccessLevel + ", minAccessLevel=" + minAccessLevel + ", userID=" + userID
-				+ ", username=" + username + ", passwordHash=" + passwordHash + ", accessLevel=" + accessLevel
-				+ ", verified=" + verified + ", email=" + email + ", phoneNumber=" + phoneNumber + ", fName=" + fName
-				+ ", lName=" + lName + ", address=" + address + ", dob=" + dob + ", accounts=" + accounts + "]";
+		return "User [maxAccessLevel=" + this.maxAccessLevel + ", minAccessLevel=" + this.minAccessLevel + ", userID=" + this.userID
+				+ ", username=" + this.username + ", passwordHash=" + this.passwordHash + ", accessLevel=" + this.accessLevel
+				+ ", verified=" + this.verified + ", email=" + this.email + ", phoneNumber=" + this.phoneNumber + ", fName=" + this.fName
+				+ ", lName=" + this.lName + ", address=" + this.address + ", dob=" + this.dob + ", accounts=" + this.accounts + "]";
 	}
 
 	@Override
@@ -350,25 +351,22 @@ public class person {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if ((obj == null) || (this.getClass() != obj.getClass())) {
 			return false;
 		}
 		person other = (person) obj;
-		return accessLevel == other.accessLevel && Objects.equals(accounts, other.accounts)
-				&& Objects.equals(address, other.address) && Objects.equals(dob, other.dob)
-				&& Objects.equals(email, other.email) && Objects.equals(fName, other.fName)
-				&& Objects.equals(lName, other.lName) && maxAccessLevel == other.maxAccessLevel
-				&& minAccessLevel == other.minAccessLevel && Objects.equals(passwordHash, other.passwordHash)
-				&& Objects.equals(phoneNumber, other.phoneNumber) && userID == other.userID
-				&& Objects.equals(username, other.username) && verified == other.verified;
+		return (this.accessLevel == other.accessLevel) && Objects.equals(this.accounts, other.accounts)
+				&& Objects.equals(this.address, other.address) && Objects.equals(this.dob, other.dob)
+				&& Objects.equals(this.email, other.email) && Objects.equals(this.fName, other.fName)
+				&& Objects.equals(this.lName, other.lName) && (this.maxAccessLevel == other.maxAccessLevel)
+				&& (this.minAccessLevel == other.minAccessLevel) && Objects.equals(this.passwordHash, other.passwordHash)
+				&& Objects.equals(this.phoneNumber, other.phoneNumber) && (this.userID == other.userID)
+				&& Objects.equals(this.username, other.username) && (this.verified == other.verified);
 	}
 
-	
-	
-	
-	
+
+
+
+
 }
 
