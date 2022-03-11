@@ -1,21 +1,21 @@
 basic crud operations
 - create a table
 	- primary key (one for now, compsite for strech goal)
-	- data types of columns (primative)
-		- integer
-		- varchar
-		- boolean
-		- numeric
-		- date-time
-	- serial, not null, unique, default
+	- data types of columns (primative) -> done
+		- integer -> done
+		- varchar -> done
+		- boolean -> done
+		- numeric -> done
+		- date-time -> done
+	- serial, not null, unique, default -> done
 	- foreign key
 
-- update a table
-	- add foreign keys
-	- change primary key
+- update a table -> done
+	- add foreign keys 
+	- change primary key -> Maybe done?
 
-- remove a table
-	- remove a column
+- remove a table -> done
+	- remove a column -> done
 	
 
 
