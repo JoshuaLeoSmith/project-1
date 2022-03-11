@@ -86,8 +86,11 @@ public class TableDao {
 	}
 	
 	
-	public static void insert(String name, MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException{
-		
+	public static void insert(MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException{
+		String name=allFieldsInTable.getTableName();
+		if(name.equals("")) {
+			name=allFieldsInTable.getSimpleClassName();
+		}
 		
 			
 		String sql ="";
@@ -103,7 +106,7 @@ public class TableDao {
 			sql += "create table if not exists";
 		}
 		else if(managment.toLowerCase().equals("update")) {
-			update(name, allFieldsInTable);
+			alter(allFieldsInTable);
 			return;
 		}
 		else {
@@ -159,7 +162,7 @@ public class TableDao {
 		sql= sql.substring(0, sql.length() - 1);
 		sql +=");";
 		
-			
+		conn.setAutoCommit(false);
 		String createSchemaSql="CREATE SCHEMA IF NOT EXISTS "+schema;
 		PreparedStatement createStatment= conn.prepareStatement(createSchemaSql);			
 		createStatment.execute();
@@ -173,16 +176,23 @@ public class TableDao {
 		PreparedStatement myStatment= conn.prepareStatement(sql);			
 		System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors to see what is being queried
 		myStatment.execute();
+		conn.commit();
+		conn.setAutoCommit(true);
 	}
-
 	
-	public static void update(String name, MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException{
+	public static void alter(MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException{
+		String name=allFieldsInTable.getTableName();
+		if(name.equals("")) {
+			name=allFieldsInTable.getSimpleClassName();
+		}
+		
+		
 		//Delete all nonexisting 
 		String sql="SELECT column_name FROM information_schema.columns WHERE table_schema = '"+schema+
 				"' AND table_name  = '"+name+"';";
 		System.out.println(sql);
 		String fieldName="";
-		
+		conn.setAutoCommit(false);
 		
 		
 		PrimaryKeyField PField = allFieldsInTable.getPrimaryKey();
@@ -244,6 +254,7 @@ public class TableDao {
 			sql+=" bigint";
 		}
 		else {
+			conn.rollback();
 			throw new IllegalArgumentException("Invalid data type for a primary key");
 		}		
 		sql+=" primary key;";	
@@ -289,7 +300,7 @@ public class TableDao {
 				String alterSqlUnique=sql;
 				String alterSqlDefault=sql+" alter column \""+fieldName+"\"";
 				String alterSqlSerial=sql+" alter column \""+fieldName+"\"";
-				
+				String SQLDropSerial="";
 				if(myField.isNullable()) {
 					alterSqlNull+=" drop not null";
 				}
@@ -311,7 +322,6 @@ public class TableDao {
 					String CreateSequence="CREATE SEQUENCE if not exists "+schema+".seq_"+fieldName+" owned by "+schema+"."+name+".\""+fieldName+"\"";
 					String SelectSequence="SELECT setval('"+schema+".seq_"+fieldName+"', coalesce(max(\""+fieldName+"\"), 0) + 1, false) from "+""+schema+"."+name+";";
 					String AlterSequence ="ALTER TABLE "+""+schema+"."+name+" alter column \""+fieldName+"\" set default nextval('"+schema+".seq_"+fieldName+"');";
-					
 					myStatment= conn.prepareStatement(CreateSequence);
 					System.out.println(myStatment.toString());
 					myStatment.execute();
@@ -320,8 +330,10 @@ public class TableDao {
 					myStatment.execute();
 					myStatment= conn.prepareStatement(AlterSequence);
 					System.out.println(myStatment.toString());
-					myStatment.execute();
-					
+					myStatment.execute();					
+				}
+				else {
+					SQLDropSerial ="ALTER TABLE \""+schema+"\".\""+name+"\""+" alter column \""+fieldName+"\" drop default;";
 				}
 				if(myField.getDefaultValue().equals("")) {
 					alterSqlDefault+=" drop default";
@@ -332,10 +344,13 @@ public class TableDao {
 				System.out.println(alterSqlNull);
 				System.out.println(alterSqlUnique);
 				System.out.println(alterSqlDefault);
+				System.out.println(SQLDropSerial);
 				
 				myStatment= conn.prepareStatement(alterSqlNull);
 				myStatment.execute();
 				myStatment= conn.prepareStatement(alterSqlUnique);
+				myStatment.execute();
+				myStatment= conn.prepareStatement(SQLDropSerial);
 				myStatment.execute();
 				myStatment= conn.prepareStatement(alterSqlDefault);
 				myStatment.execute();
@@ -345,24 +360,50 @@ public class TableDao {
 			
 				
 		}
-		
+		conn.commit();
+		conn.setAutoCommit(true);
 
+	}
 		
-		
-		
-		
-		
-		
-		
+	public static void truncate(MetaModel<?> table) throws SQLException {
+		String name=table.getTableName();
+		if(name.equals("")) {
+			name=table.getSimpleClassName();
+		}
+		String sql="truncate table \""+name+"\"";
+		PreparedStatement myStatment= conn.prepareStatement(sql);
+		myStatment.execute();		
 	}
 	
+	public static void drop(MetaModel<?> table) throws SQLException {
+		String name=table.getTableName();
+		if(name.equals("")) {
+			name=table.getSimpleClassName();
+		}
+		String sql="drop table \""+name+"\"";
+		PreparedStatement myStatment= conn.prepareStatement(sql);
+		myStatment.execute();	
+	}
+	
+	public static void renameTable(MetaModel<?> table, String oldName) {
+		String name=table.getTableName();
+		if(name.equals("")) {
+			name=table.getSimpleClassName();
+		}
+		String sql="Alter table \""+schema+"\".\""+oldName+"\" rename to \""+schema+"\".\""+name+"\";";		
+	}
+
+	public static void renameColumn(MetaModel<?> table, String oldName, String newName) {
+		String name=table.getTableName();
+		if(name.equals("")) {
+			name=table.getSimpleClassName();
+		}
+		String sql="Alter table \""+schema+"\".\""+name+"\" rename column \""+schema+"\".\""+oldName+"\" to \""+schema+"\".\""+newName+"\"";		
+	}
 	
 	public static void main(String[] args) throws IllegalAccessException, SQLException {
-		
 		MetaModel bob = MetaModel.of(person.class);
-		insert(bob.getSimpleClassName(), bob);
-		
-		
+		insert(bob);		
 		
 	}
 	
