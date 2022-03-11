@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.revature.Relation;
 import com.revature.annotations.Check;
 import com.revature.annotations.Checks;
 import com.revature.annotations.Column;
@@ -25,10 +26,24 @@ import com.revature.annotations.Exclude;
  */
 public class ColumnField implements GenericField {
 	private Field field;
+	private Relation relation;
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnField(Field field) {
 		if (field.getAnnotation(Column.class) == null && field.getAnnotation(Exclude.class) != null) {
 			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + getName() + " is not Annotated with @Column or is Annotated with @Exclude");
+		}
+		
+		this.relation = Relation.None;
+		for (Class relation : relations) {
+			if (field.getAnnotation(relation) != null) {
+				if (this.relation != Relation.None) {
+					throw new IllegalStateException(
+							"Provided field " + field.getName() + " can only have one relationship type");
+				} else {
+					this.relation = Relation.valueOf(relation.getSimpleName());
+				}
+			}
 		}
 		
 		this.field = field;

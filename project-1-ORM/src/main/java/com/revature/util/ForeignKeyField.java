@@ -3,52 +3,79 @@ package com.revature.util;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
+import com.revature.Relation;
 import com.revature.annotations.JoinColumn;
 
 public class ForeignKeyField implements GenericField {
-	
-	
+
 	private Field field; // from java.lang.reflect
-	
+	private Relation relation;
+
 	// constructor
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ForeignKeyField(Field field) {
 		JoinColumn anno = field.getAnnotation(JoinColumn.class);
-		
-		// check if it has the annotation we're looking for 
-		if (anno == null) { // if it's NOT equal to @Column...
-			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + getName() + 
-					" is not annotated with @JoinColumn");
+
+		if (anno == null) {
+			throw new IllegalStateException("Cannot create ColumnField object! Provided field " + field.getName()
+					+ " is not annotated with @JoinColumn");
 		} else if (anno.mappedByColumn().equals("") || anno.mappedByTable().equals("")) {
-			throw new IllegalStateException("Provided field " + getName() + 
-					" needs to have a mappedbyColumn and mappedby");
+			throw new IllegalStateException(
+					"Provided field " + field.getName() + " needs to have a mappedbyColumn and mappedby");
 		}
 		
+		this.relation = Relation.None;
+		for (Class relation : relations) {
+			if (field.getAnnotation(relation) != null) {
+				if (this.relation != Relation.None) {
+					throw new IllegalStateException(
+							"Provided field " + field.getName() + " can only have one relationship type");
+				} else {
+					this.relation = Relation.valueOf(relation.getSimpleName());
+				}
+			}
+		}
 		
+		if (this.relation == Relation.None) {
+			throw new IllegalStateException(
+					"Provided field " + field.getName() + " have one declared relationship type");
+		}
 		
 		this.field = field;
 	}
-	
+
 	public String getName() {
-		return field.getName().toLowerCase();
+		return field.getName();
 	}
-	
+
 	// return the TYPE of the field that's annotated
 	public Class<?> getType() {
-		return field.getType(); // think about how we could this to our advantage when we (as the ORM framework developers
-							    // are crafting a way in which we can  set up a way to determine the RDBMS type for the column
+		return field.getType(); // think about how we could this to our advantage when we (as the ORM framework
+								// developers
+								// are crafting a way in which we can set up a way to determine the RDBMS type
+								// for the column
 	}
 
 	// getColumnName() --> extract the column name that the user sets for that field
 	public String getColumnName() {
-		return field.getAnnotation(JoinColumn.class).columnName(); // extract the columnName() property that the user sets
+		return field.getAnnotation(JoinColumn.class).columnName(); // extract the columnName() property that the user
+																	// sets
 	}
-	
+
 	public String getMappedByColumn() {
 		return field.getAnnotation(JoinColumn.class).mappedByColumn();
 	}
-	
+
 	public String getMappedByTable() {
 		return field.getAnnotation(JoinColumn.class).mappedByTable();
+	}
+	
+	public boolean isCascade() {
+		return field.getAnnotation(JoinColumn.class).cascade();
+	}
+	
+	public Relation getRelation() {
+		return relation;
 	}
 
 	@Override

@@ -17,10 +17,10 @@ public class Transaction {
 	
 	// copied from Connection so that the user doesn't have to worry about importing 
 	// anything from the sql library when using this api
-	private static final int READ_COMMITED = Connection.TRANSACTION_READ_COMMITTED;
-	private static final int READ_UNCOMMITED = Connection.TRANSACTION_READ_UNCOMMITTED;
-	private static final int REPEATABLE_READ = Connection.TRANSACTION_REPEATABLE_READ;
-	private static final int SERIALIZABLE = Connection.TRANSACTION_SERIALIZABLE;
+	public static final int READ_COMMITED = Connection.TRANSACTION_READ_COMMITTED;
+	public static final int READ_UNCOMMITED = Connection.TRANSACTION_READ_UNCOMMITTED;
+	public static final int REPEATABLE_READ = Connection.TRANSACTION_REPEATABLE_READ;
+	public static final int SERIALIZABLE = Connection.TRANSACTION_SERIALIZABLE;
 
 	private Map<String, Savepoint> savepoints;
 	private boolean closed;
@@ -110,7 +110,7 @@ public class Transaction {
 		Savepoint savepoint = savepoints.get(name);
 		
 		if (savepoint != null) {
-			tdao.releaseSavepoint(savepoint);
+			tdao.releaseSavepoint(name, savepoint);
 		} else {
 			logger.error("The savepoint \"" + name + "\" does not exist");
 			throw new RuntimeException("Unable to find savepoint \"" + name + "\"");

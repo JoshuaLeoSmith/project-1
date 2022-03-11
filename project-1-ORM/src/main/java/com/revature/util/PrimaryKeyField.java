@@ -3,14 +3,17 @@ package com.revature.util;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
+import com.revature.Relation;
 import com.revature.annotations.Column;
 import com.revature.annotations.Id;
 
 public class PrimaryKeyField implements GenericField {
 	
 	private Field field; // from java.lang.reflect
+	private Relation relation;
 	
 	// constructor to build an object that represents data about the field that has been annotated with @Id
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public PrimaryKeyField(Field field) {
 		
 		// check if it has the annotation we're looking for 
@@ -19,11 +22,23 @@ public class PrimaryKeyField implements GenericField {
 					" is not Annotated with @Id");
 		}
 		
+		this.relation = Relation.None;
+		for (Class relation : relations) {
+			if (field.getAnnotation(relation) != null) {
+				if (this.relation != Relation.None) {
+					throw new IllegalStateException(
+							"Provided field " + field.getName() + " can only have one relationship type");
+				} else {
+					this.relation = Relation.valueOf(relation.getSimpleName());
+				}
+			}
+		}
+		
 		this.field = field;
 	}
 	
 	public String getName() {
-		return field.getName().toLowerCase();
+		return field.getName();
 	}
 	
 	// return the TYPE of the field that's annotated
