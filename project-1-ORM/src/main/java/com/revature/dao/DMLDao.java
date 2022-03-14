@@ -23,7 +23,7 @@ public class DMLDao {
 	public DMLDao() {
 		this.conn = ConnectionUtil.getConnection();
 		try {
-			conn.setAutoCommit(false);
+			conn.setAutoCommit(true);
 		} catch (SQLException e) {
 			logger.error("SQLException thrown... cannot access the database...");
 			e.printStackTrace();
@@ -34,7 +34,7 @@ public class DMLDao {
 		
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
+			String schema = "'" + ConnectionUtil.getSchema() + "'";
 			
 			
 			String values = "(";
@@ -289,12 +289,65 @@ public class DMLDao {
 			e.printStackTrace();
 			return null;
 		}
-		
-		
 		return null;
 	}
 	
-	
+	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, boolean save) {
+		try{
+			
+			String schema = ConnectionUtil.getSchema();
+			
+			
+			String values = "(";
+			String colNames = "(";
+			
+			
+			for(String s : colNameToValue.keySet()) {
+				
+				colNames = colNames + s + ",";
+				values = values + "'" + String.valueOf(colNameToValue.get(s)) + "',";
+				
+			}
+			
+			colNames = colNames.substring(0, colNames.length()-1) + ")";
+			values = values.substring(0, values.length()-1) + ")";
+			
+			
+			
+			
+			String sql = "INSERT INTO " + schema + "." + tableName + " " + colNames + " VALUES " + values + " RETURNING " + pkName;
+			
+			
+			
+			PreparedStatement stmt = this.conn.prepareStatement(sql);
+			
+		
+			
+			ResultSet rs;
+			
+			int id = -1;
+			if((rs = stmt.executeQuery()) != null) {
+				rs.next();
+				
+				id = rs.getInt(pkName);
+			}
+			
+			if(save) {
+				sql = "COMMIT";
+				stmt = conn.prepareStatement(sql);
+				stmt.execute();
+				logger.info("Successfully inserted data with id" + id + "... Committed.");
+			}else {
+				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
+			}
+			return id;
+		
+		} catch(SQLException e) {
+			e.printStackTrace();
+			
+			return -1;	
+		}
+	}
 	
 	
 	

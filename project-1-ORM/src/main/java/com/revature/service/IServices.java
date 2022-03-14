@@ -11,7 +11,6 @@ public interface IServices {
 	public int removeByPk(Class<?> clazz, int id, boolean save);
 	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save);
 	
-	
 	public int commit();
 	
 	public int rollback();
@@ -32,13 +31,5 @@ public interface IServices {
 	
 	void renameColumn(Class<?> clazz, String oldName, String newName);
 
-	
-	
-	
-	
-	///public int create();
-	
-	//public int select();
-	
-	
+	int updateRow(Object o);
 }
