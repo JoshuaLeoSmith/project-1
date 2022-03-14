@@ -11,6 +11,7 @@ import com.revature.annotations.Entity;
 import com.revature.annotations.Exclude;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
+import com.revature.annotations.ManyToMany;
 
 @Entity
 public class Account {
@@ -18,6 +19,7 @@ public class Account {
 	@Id
 	int ID;
 	@JoinColumn(mappedByTable = "person", mappedByColumn = "accounts")
+	@ManyToMany
 	List<person> owners;
 	@Column(default_value = "0", precision = 20, scale = 2)
 	int balance;//Stored as pennies
@@ -27,21 +29,21 @@ public class Account {
 
 
 	public Account(Account copyAccount) {
-		this.owners=copyAccount.owners;
-		this.balance=copyAccount.balance;
-		this.ID= copyAccount.getID();
+		owners=copyAccount.owners;
+		balance=copyAccount.balance;
+		ID= copyAccount.getID();
 		Account.logBot.info("Account copied to new account");
 	}
 	public Account(person owner) {
 		List<person> owners= new ArrayList<>();
 		owners.add(owner);
 		this.owners=owners;
-		this.balance = 0;
+		balance = 0;
 		Account.logBot.info("New account with account "+owner.getUserID()+" as owner created with 0 balance");
 	}
 	public Account(List<person> owners) {
 		this.owners = owners;
-		this.balance = 0;
+		balance = 0;
 		Account.logBot.info("New account with multiple owners created with 0 balance");
 	}
 
@@ -50,91 +52,91 @@ public class Account {
 		owners.add(owner);
 		this.owners=owners;
 		this.balance = balance;
-		Account.logBot.info("New account with account "+owner.getUserID()+" as owner created with a balance of "+this.getBalance());
+		Account.logBot.info("New account with account "+owner.getUserID()+" as owner created with a balance of "+getBalance());
 	}
 	public Account(List<person> owners, int balance) {
 		this.owners = owners;
 		this.balance = balance;
-		Account.logBot.info("New account with multiple owners created with a balance of "+this.getBalance());
+		Account.logBot.info("New account with multiple owners created with a balance of "+getBalance());
 	}
 
 
 
 	public Account transferTo(Account otherAccount, double amount) {
 		int amountInPennies=(int)amount*100;
-		this.subtractFromBalance(amountInPennies);
+		subtractFromBalance(amountInPennies);
 		otherAccount.addToBalance(amountInPennies);
 
-		Account.logBot.info("Account transfered $"+amount+" money from "+this.ID+" to account"+otherAccount.ID);
+		Account.logBot.info("Account transfered $"+amount+" money from "+ID+" to account"+otherAccount.ID);
 		return this;
 	}
 	public Account transferFrom(Account otherAccount, double amount) {
 		int amountInPennies=(int)amount*100;
-		this.addToBalance(amountInPennies);
+		addToBalance(amountInPennies);
 		otherAccount.subtractFromBalance(amountInPennies);
-		Account.logBot.info("Account transfered $"+amount+" money to "+this.ID+" from account"+otherAccount.ID);
+		Account.logBot.info("Account transfered $"+amount+" money to "+ID+" from account"+otherAccount.ID);
 		return this;
 	}
 	private int subtractFromBalance(int amount) {
 
-		if(this.balance>=amount) {
-			this.balance-=amount;
+		if(balance>=amount) {
+			balance-=amount;
 
-			Account.logBot.info("Reduced "+amount +" from account "+this.ID);
+			Account.logBot.info("Reduced "+amount +" from account "+ID);
 
 		}
 		else {
-			Account.logBot.info("The value of account "+this.ID+" would go negative if ran");
+			Account.logBot.info("The value of account "+ID+" would go negative if ran");
 
 		}
-		return this.balance;
+		return balance;
 
 	}
 	private int addToBalance(int amount) {
 
-		this.balance+=amount;
-		Account.logBot.info("Added "+amount +" to account "+this.ID);
-		return this.balance;
+		balance+=amount;
+		Account.logBot.info("Added "+amount +" to account "+ID);
+		return balance;
 	}
 
 
 	public double withdraw(double amount)  {
 		int withdrawAmount=(int)(amount*100);
-		this.subtractFromBalance(withdrawAmount);
+		subtractFromBalance(withdrawAmount);
 		amount=Math.floor(amount*100.0)/100.0;
-		Account.logBot.info("Withdrew $"+amount+" from account "+this.ID);
-		return this.getBalance();
+		Account.logBot.info("Withdrew $"+amount+" from account "+ID);
+		return getBalance();
 	}
 	public double deposit(double amount) {
 		int withdrawAmount=(int) (amount*100);
-		this.addToBalance(withdrawAmount);
-		Account.logBot.info("Deposited $"+amount+" into account "+this.ID);
-		return this.getBalance();
+		addToBalance(withdrawAmount);
+		Account.logBot.info("Deposited $"+amount+" into account "+ID);
+		return getBalance();
 	}
 
 	public boolean withdrawAll() {
-		double currentValue=this.getBalance();
-		this.withdraw(this.getBalance());
-		Account.logBot.info("Withdrew all $"+currentValue+" from account "+this.ID);
+		double currentValue=getBalance();
+		withdraw(getBalance());
+		Account.logBot.info("Withdrew all $"+currentValue+" from account "+ID);
 		return true;
 	}
 	public boolean closeAccount() {
-		this.balance=0;
-		this.owners=null;
+		balance=0;
+		owners=null;
 
 
-		Account.logBot.info("Account "+this.ID+" closed.");//Need some way to force this to stop?
+		Account.logBot.info("Account "+ID+" closed.");//Need some way to force this to stop?
 		return true;
 	}
 
 	public Account addOwner(person newOwner) {
-		this.owners.add(newOwner);
-		Account.logBot.info("Added "+newOwner.getUserID()+" as owner of account "+this.ID);
+		owners.add(newOwner);
+		Account.logBot.info("Added "+newOwner.getUserID()+" as owner of account "+ID);
 		return this;
 	}
 	public Account removeOwner(person badOwner) {
-		this.owners.add(badOwner);
-		Account.logBot.info("Removed "+badOwner.getUserID()+" as owner of account "+this.ID);
+		owners.add(badOwner);
+		Account.logBot.info("Removed "+badOwner.getUserID()+" as owner of account "+ID);
 		return this;
 	}
 
@@ -151,14 +153,14 @@ public class Account {
 
 
 	public int getID() {
-		return this.ID;
+		return ID;
 	}
 	public List<person> getOwners() {
-		return this.owners;
+		return owners;
 	}
 	public double getBalance() {
-		double cents=(this.balance%100)/100.0;
-		double dollars=this.balance/100;
+		double cents=(balance%100)/100.0;
+		double dollars=balance/100;
 		double balanceInDollars=(dollars+cents);
 
 		//System.out.println(balance);
@@ -166,12 +168,12 @@ public class Account {
 	}
 
 	public int getIntBalance() {
-		return this.balance;
+		return balance;
 	}
 
 
 	public void setID(int iD) {
-		this.ID = iD;
+		ID = iD;
 	}
 	public void setOwners(List<person> owners) {
 		this.owners = owners;
@@ -184,7 +186,7 @@ public class Account {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.ID, this.balance, this.owners);
+		return Objects.hash(ID, balance, owners);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -195,11 +197,11 @@ public class Account {
 			return false;
 		}
 		Account other = (Account) obj;
-		return (this.ID == other.ID) && (this.balance == other.balance) && Objects.equals(this.owners, other.owners);
+		return (ID == other.ID) && (balance == other.balance) && Objects.equals(owners, other.owners);
 	}
 	@Override
 	public String toString() {
-		return "Account [ID=" + this.ID + ", owners=" + this.owners + ", balance=" + this.balance + "]";
+		return "Account [ID=" + ID + ", owners=" + owners + ", balance=" + balance + "]";
 	}
 
 
