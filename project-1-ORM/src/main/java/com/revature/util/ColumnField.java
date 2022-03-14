@@ -155,4 +155,9 @@ public class ColumnField implements GenericField {
 	public String toString() {
 		return "ColumnField [field=" + field + "]";
 	}
+
+	@Override
+	public Relation getRelation() {
+		return relation;
+	}
 }
