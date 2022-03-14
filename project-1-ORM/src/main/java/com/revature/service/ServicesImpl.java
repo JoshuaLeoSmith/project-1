@@ -49,13 +49,13 @@ public class ServicesImpl implements IServices {
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
-				f.setAccessible(true);
+				f.setAccessible(false);
 			}
 		}
 
 
 		// return the list of field values, the name of the table, and if you want to commit the changes.
-		return td.insert(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
+		return td.updateRow(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
 		// this should return the id of the new row created, or -1 if failed.
 	}
 
@@ -111,6 +111,37 @@ public class ServicesImpl implements IServices {
 
 		return td.findByPk(clazz, id, pkName);
 	}
+
+
+	@Override
+	public int updateRow(Object o) {
+
+		Field[] fields = o.getClass().getDeclaredFields();
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<>();
+
+		MetaModel m = MetaModel.of(o.getClass());
+
+
+		for(Field f : fields) {
+			f.setAccessible(true);
+			try {
+				if (f.getAnnotation(Column.class) != null) {
+					colNameToValue.put(f.getName(), f.get(o));
+				}
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			} finally {
+				f.setAccessible(false);
+			}
+		}
+
+
+		// return the list of field values, the name of the table, and if you want to commit the changes.
+		return td.updateRow(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
+
+	}
+
+
 
 
 	@Override

@@ -7,16 +7,16 @@ import com.revature.annotations.*;
 @Entity(tableName="josh_tester_table")
 public class TesterClass implements Serializable {
 
-	@Column(columnName="username")
+	@Column(columnName="username", unique=true, nullable=false)
 	private String username;
 	
-	@Column(columnName="pwd")
+	@Column(columnName="pwd", nullable=false)
 	private String pwd;
 	
-	@Column(columnName="balance")
+	@Column(columnName="balance", scale=2)
 	private double balance;
 	
-	@Id(columnName="id")
+	@Id(columnName="id",serial=true)
 	private int id;
 	
 	
