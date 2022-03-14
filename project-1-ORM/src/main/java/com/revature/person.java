@@ -16,6 +16,7 @@ import com.revature.annotations.Entity;
 import com.revature.annotations.Exclude;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
+import com.revature.annotations.ManyToMany;
 
 
 @Entity
@@ -53,6 +54,7 @@ public class person {
 	protected int testSerial;
 
 	@JoinColumn(mappedByTable = "Account", mappedByColumn = "owners")
+	@ManyToMany
 	protected List<Account> accounts;
 
 

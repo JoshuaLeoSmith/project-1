@@ -8,8 +8,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.revature.Account;
-import com.revature.person;
+import com.revature.Relation;
 import com.revature.util.ColumnField;
 //import com.revature.inspection.ClassInspector;
 import com.revature.util.ConnectionUtil;
@@ -19,11 +18,12 @@ import com.revature.util.PrimaryKeyField;
 
 public class TableDao {
 	// private static Logger logBot = Logger.getLogger(TableDao.class);
+
 	private static String managment = ConnectionUtil.getManagement();
 	private static String schema = ConnectionUtil.getSchema();
 	private static Connection conn = ConnectionUtil.getConnection();
 
-	public static String getSQLName(ColumnField myField) {
+	private static String getSQLName(ColumnField myField) {
 		String fieldName = myField.getColumnName();
 		if (myField.getColumnName().equals("")) {
 
@@ -32,7 +32,7 @@ public class TableDao {
 		return fieldName;
 	}
 
-	public static String getSQLType(ColumnField myField) {
+	private static String getSQLType(ColumnField myField) {
 		String modifications = "";
 
 		if (myField.getType() == int.class) {
@@ -59,7 +59,7 @@ public class TableDao {
 		return modifications;
 	}
 
-	public static String getSQLType(PrimaryKeyField myField) {
+	private static String getSQLType(PrimaryKeyField myField) {
 		String modifications = "";
 
 		if (myField.getType() == int.class) {
@@ -82,30 +82,8 @@ public class TableDao {
 		return modifications;
 	}
 
-	public static String getSQLType(ForeignKeyField myField) {
-		String modifications = "";
 
-		if (myField.getType() == int.class) {
-			modifications += " int";
-		} // Test against Integer
-		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)) {
-			modifications += " smallint";
-		} else if (myField.getType() == long.class) {
-			modifications += " bigint";
-		} else if (myField.getType() == boolean.class) {
-			modifications += " boolean";
-		} else if (myField.getType() == char.class) {
-			modifications += " char(1)";
-		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
-				|| (myField.getType() == java.time.LocalDate.class)) {
-			modifications += " date";
-		} else {
-			throw new IllegalArgumentException("Invalid data type for a foreign key");
-		}
-		return modifications;
-	}
-
-	public static String getSQLModification(ColumnField myField) {
+	private static String getSQLModification(ColumnField myField) {
 		String modifications = "";
 		if (myField.isSerial()) {
 			modifications += " serial";
@@ -128,8 +106,8 @@ public class TableDao {
 
 	}
 
-
-	public static void insert(MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException {
+	public static void insert(MetaModel<?> allFieldsInTable)
+			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
 			name = allFieldsInTable.getSimpleClassName();
@@ -142,7 +120,7 @@ public class TableDao {
 		 *
 		 */
 		if (TableDao.managment.toLowerCase().equals("validate")) {
-			throw new IllegalAccessException("Can't insert tables on validate control. Change control to insert.");
+			throw new IllegalArgumentException("Can't insert tables on validate control. Change control to insert.");
 		} else if (TableDao.managment.toLowerCase().equals("create")) {
 			sql += "create table if not exists";
 		} else if (TableDao.managment.toLowerCase().equals("update")) {
@@ -211,9 +189,12 @@ public class TableDao {
 		myStatment.execute();
 		TableDao.conn.commit();
 		TableDao.conn.setAutoCommit(true);
+		addForeignKeys(allFieldsInTable);
 	}
 
-	public static void alter(MetaModel<?> allFieldsInTable) throws IllegalAccessException, SQLException {
+	@SuppressWarnings("resource")
+	public static void alter(MetaModel<?> allFieldsInTable)
+			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
 			name = allFieldsInTable.getSimpleClassName();
@@ -222,7 +203,7 @@ public class TableDao {
 		// Delete all nonexisting
 		String sql = "SELECT column_name FROM information_schema.columns WHERE table_schema = '" + TableDao.schema
 				+ "' AND table_name  = '" + name + "';";
-		//		System.out.println(sql);
+		// System.out.println(sql);
 		String fieldName;
 		TableDao.conn.setAutoCommit(false);
 
@@ -255,16 +236,16 @@ public class TableDao {
 		if (currentColumns.size() == 0) {
 			String createTable = "create table if not exists \"" + TableDao.schema + "\".\"" + name + "\"()";
 			PreparedStatement createStatment = TableDao.conn.prepareStatement(createTable);
-			//			System.out.println(createStatment.toString());
+			// System.out.println(createStatment.toString());
 			createStatment.execute();
 		}
 
-		//		System.out.println("The current columns " + currentColumns);
-		//		System.out.println(newColumns);
+		// System.out.println("The current columns " + currentColumns);
+		// System.out.println(newColumns);
 
 		List<String> badColumns = new ArrayList<>(currentColumns);
 		badColumns.removeAll(newColumns);
-		//		System.out.println("Bad columns" + badColumns);
+		// System.out.println("Bad columns" + badColumns);
 
 		fieldName = PfieldName;
 		sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"";
@@ -286,7 +267,7 @@ public class TableDao {
 			}
 			sql += " primary key;";
 			myStatment = TableDao.conn.prepareStatement(sql);
-			//			System.out.println(myStatment.toString());
+			// System.out.println(myStatment.toString());
 		} else {
 			String alterSqlType = sql + " alter" + " column \"" + fieldName + "\"" + " type "
 					+ TableDao.getSQLType(PField) + " using \"" + fieldName + "\"::" + TableDao.getSQLType(PField);
@@ -306,13 +287,13 @@ public class TableDao {
 				String AlterSequence = "ALTER TABLE " + "\"" + TableDao.schema + "\".\"" + name + "\" alter column \""
 						+ fieldName + "\" set default nextval('" + TableDao.schema + ".seq_" + fieldName + "');";
 				myStatment = TableDao.conn.prepareStatement(CreateSequence);
-				//				System.out.println(myStatment.toString());
+				// System.out.println(myStatment.toString());
 				myStatment.execute();
 				myStatment = TableDao.conn.prepareStatement(SelectSequence);
-				//				System.out.println(myStatment.toString());
+				// System.out.println(myStatment.toString());
 				myStatment.execute();
 				myStatment = TableDao.conn.prepareStatement(AlterSequence);
-				//				System.out.println(myStatment.toString());
+				// System.out.println(myStatment.toString());
 				myStatment.execute();
 			} else {
 				SQLDropSerial = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"" + " alter column \""
@@ -335,7 +316,6 @@ public class TableDao {
 		}
 		myStatment.execute();
 
-
 		for (String columnName : badColumns) {
 			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\" DROP COLUMN if exists \"" + columnName
 					+ "\" cascade;";
@@ -346,9 +326,9 @@ public class TableDao {
 		List<String> columnsToAdd = new ArrayList<>(newColumns);
 		columnsToAdd.removeAll(currentColumns);
 
-		//		System.out.println("Columns to add" + columnsToAdd);
+		// System.out.println("Columns to add" + columnsToAdd);
 
-		//		System.out.println("-----------------");
+		// System.out.println("-----------------");
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
 			fieldName = TableDao.getSQLName(myField);
 			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"";
@@ -359,7 +339,7 @@ public class TableDao {
 					sql += " " + TableDao.getSQLType(myField) + " ";
 				}
 				sql += TableDao.getSQLModification(myField);
-				//				System.out.println(sql);
+				// System.out.println(sql);
 				myStatment = TableDao.conn.prepareStatement(sql);
 			} else {
 				String alterSqlType = sql + " alter" + " column \"" + fieldName + "\"" + " type "
@@ -399,13 +379,13 @@ public class TableDao {
 					String AlterSequence = "ALTER TABLE " + "" + TableDao.schema + "." + name + " alter column \""
 							+ fieldName + "\" set default nextval('" + TableDao.schema + ".seq_" + fieldName + "');";
 					myStatment = TableDao.conn.prepareStatement(CreateSequence);
-					//					System.out.println(myStatment.toString());
+					// System.out.println(myStatment.toString());
 					myStatment.execute();
 					myStatment = TableDao.conn.prepareStatement(SelectSequence);
-					//					System.out.println(myStatment.toString());
+					// System.out.println(myStatment.toString());
 					myStatment.execute();
 					myStatment = TableDao.conn.prepareStatement(AlterSequence);
-					//					System.out.println(myStatment.toString());
+					// System.out.println(myStatment.toString());
 					myStatment.execute();
 				} else {
 					SQLDropSerial = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"" + " alter column \""
@@ -417,10 +397,10 @@ public class TableDao {
 					alterSqlDefault += " set default \'" + myField.getDefaultValue() + "\'";
 				}
 
-				//				System.out.println(alterSqlNull);
-				//				System.out.println(alterSqlUnique);
-				//				System.out.println(alterSqlDefault);
-				//				System.out.println(SQLDropSerial);
+				// System.out.println(alterSqlNull);
+				// System.out.println(alterSqlUnique);
+				// System.out.println(alterSqlDefault);
+				// System.out.println(SQLDropSerial);
 
 				myStatment = TableDao.conn.prepareStatement(alterSqlType);
 				myStatment.execute();
@@ -439,11 +419,13 @@ public class TableDao {
 				myStatment.execute();
 				myStatment = TableDao.conn.prepareStatement(alterSqlDefault);
 			}
-			//			myStatment.execute();
+			// myStatment.execute();
 			myStatment.execute();
 		}
 		TableDao.conn.commit();
 		TableDao.conn.setAutoCommit(true);
+		addForeignKeys(allFieldsInTable);
+
 	}
 
 	public static void truncate(MetaModel<?> table) throws SQLException {
@@ -489,13 +471,12 @@ public class TableDao {
 
 	}
 
-	public static void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
+	private static void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
 		List<ForeignKeyField> fks = table.getForeignKeys();
-		boolean manyToMany = true;
 		List<String> keys = new ArrayList<>();
 
 		// List<String> currentColumns = new ArrayList<>();
@@ -508,35 +489,35 @@ public class TableDao {
 			String columnName = rs.getString("column_name");
 			keys.add(columnName);
 		}
-		//		System.out.println(keys.toString());
+		// System.out.println(keys.toString());
 		for (ForeignKeyField key : fks) {
 			String keyName = key.getColumnName();
 			if (keyName.equals("")) {
 				keyName = key.getName();
 			}
 			if (keys.contains(key.getMappedByColumn())) {
-				//				System.out.println("Skipping: " + keyName);
+				// System.out.println("Skipping: " + keyName);
 				continue;
 			} else {
 				keys.add(keyName);
-				//				System.out.println("Adding " + keyName);
-				//				System.out.println("New list: " + keys.toString());
+				// System.out.println("Adding " + keyName);
+				// System.out.println("New list: " + keys.toString());
 			}
-			if (manyToMany) {
-				// TODO
+			if (key.getRelation() == Relation.ManyToMany) {
 				// Create a join table with values keyName and getMappedByColumn
 
 				// Create a join table with values keyName and getMappedByColumn
 
-				//create table if not exists project_zero.user_accounts_jt (
+				// create table if not exists project_zero.user_accounts_jt (
 				String createJoinTable = "create table \"" + TableDao.schema + "\".\"" + name + "_"
 						+ key.getMappedByTable() + "\"( ";
 				String otherJoinTable = "create table \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "_"
 						+ name + "\"( ";
-				//				account_owner integer not null references project_zero.users(id) on delete cascade,
-				Class instance;
+				// account_owner integer not null references project_zero.users(id) on delete
+				// cascade,
+				Class<?> instance;
 				try {
-					//					System.out.println("com.revature." + key.getMappedByTable());
+					// System.out.println("com.revature." + key.getMappedByTable());
 					instance = Class.forName("com.revature." + key.getMappedByTable());
 				} catch (ClassNotFoundException e) {
 					throw new ClassNotFoundException("The table defined in the foreign key does not exist");
@@ -560,8 +541,7 @@ public class TableDao {
 				// cascade);
 				createJoinTable += "\"" + key.getMappedByColumn() + "\" " + TableDao.getSQLType(table.getPrimaryKey())
 				+ " not null references \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "\"(\""
-				+ otherPKeyName
-				+ "\") on delete cascade);";
+				+ otherPKeyName + "\") on delete cascade);";
 
 				otherJoinTable += "\"" + key.getMappedByColumn() + "\" " + TableDao.getSQLType(table.getPrimaryKey())
 				+ " not null references \"" + TableDao.schema + "\".\"" + key.getMappedByTable() + "\"(\""
@@ -571,30 +551,27 @@ public class TableDao {
 
 				try {
 					PreparedStatement joinStatment = TableDao.conn.prepareStatement(createJoinTable);
-					//					System.out.println(joinStatment.toString());
+					// System.out.println(joinStatment.toString());
 					joinStatment.execute();
 					PreparedStatement OtherjoinStatment = TableDao.conn.prepareStatement(otherJoinTable);
-					//					System.out.println(OtherjoinStatment.toString());
+					// System.out.println(OtherjoinStatment.toString());
 					OtherjoinStatment.execute();
 
 					TableDao.conn.rollback(joinSave);
 					joinStatment = TableDao.conn.prepareStatement(createJoinTable);
-					//					System.out.println(joinStatment.toString());
+					// System.out.println(joinStatment.toString());
 					joinStatment.execute();
 
 				} catch (SQLException e) {
-					//					System.out.println("Undoing the tables");
-					//					System.out.println(e.getMessage());
+					// System.out.println("Undoing the tables");
+					// System.out.println(e.getMessage());
 					TableDao.conn.rollback(joinSave);
-				}
-				finally {
+				} finally {
 
-					// TableDao.conn.releaseSavepoint(joinSave);
+					TableDao.conn.releaseSavepoint(joinSave);
 					TableDao.conn.commit();
 					TableDao.conn.setAutoCommit(true);
 				}
-
-
 
 				keys.add(key.getMappedByColumn());
 			} else {
@@ -602,7 +579,7 @@ public class TableDao {
 						+ keyName + "\") references \"" + key.getMappedByTable() + "\" (\"" + key.getMappedByColumn()
 						+ "\");";
 				PreparedStatement foreignStatment = TableDao.conn.prepareStatement(ForeignSQL);
-				//				System.out.println(foreignStatment.toString());
+				// System.out.println(foreignStatment.toString());
 				foreignStatment.execute();
 			}
 
@@ -610,16 +587,4 @@ public class TableDao {
 
 	}
 
-	public static void main(String[] args) throws IllegalAccessException, SQLException, ClassNotFoundException {
-		MetaModel<Class<?>> bob = MetaModel.of(person.class);
-		MetaModel<Class<?>> steve = MetaModel.of(Account.class);
-		TableDao.insert(bob);
-		TableDao.insert(steve);
-		TableDao.addForeignKeys(bob);
-		TableDao.addForeignKeys(steve);
-		System.out.println("It worked");
-
-	}
-
 }
-

@@ -3,6 +3,7 @@ import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
 import com.revature.dao.DMLDao;
@@ -13,32 +14,32 @@ import com.revature.util.MetaModel;
 public class ServicesImpl implements IServices {
 
 	private static DMLDao td = new DMLDao();
-	
-	
+
+
 	@Override
 	public int create(Class<?> clazz) {
 		try {
 			TableDao.insert(MetaModel.of(clazz));
 			return 1;
-		} catch (IllegalAccessException | SQLException e) {
+		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 			return -1;
 		}
 	}
-	
-	
+
+
 	@Override
 	public int insert(Object o, boolean save) {
-		
+
 		// Object o has fields that will be added to the table
 		// boolean save indicates whether the changes will be committed or not
-		
-		Field[] fields = o.getClass().getDeclaredFields(); 
-		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
-		
+
+		Field[] fields = o.getClass().getDeclaredFields();
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<>();
+
 		MetaModel m = MetaModel.of(o.getClass());
-		
-	
+
+
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
@@ -51,76 +52,76 @@ public class ServicesImpl implements IServices {
 				f.setAccessible(false);
 			}
 		}
-		
-		
+
+
 		// return the list of field values, the name of the table, and if you want to commit the changes.
 		return td.updateRow(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
 		// this should return the id of the new row created, or -1 if failed.
 	}
-	
-	
+
+
 	@Override
 	public int removeByPk(Class <?> clazz, int id, boolean save) {
-		
+
 		// int id is the primary key of the column that will be removed
 		// boolean save indicates whether the changes will be committed or not
-		
+
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		String pkName = m.getPrimaryKey().getColumnName();
-	
+
 		return td.remove(tableName, id, pkName, save);
-		// return TableDao.removeFromTable(id) 
+		// return TableDao.removeFromTable(id)
 		// this should return the id of the row deleted, or -1 if failed.
-		
+
 	}
-		
+
 	@Override
 	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save) {
-		
+
 		// String where is the condition that will be used to determine what will
 		// 		be removed. (ex. age > 4) .
 		// boolean save indicates whether the changes will be committed or not
-		
+
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		String pkName = m.getPrimaryKey().getColumnName();
-	
+
 		return td.remove(tableName, where, pkName, save);
-		// return TableDao.removeFromTable(where) 
+		// return TableDao.removeFromTable(where)
 		// this should return an arraylist of ids which were deleted
 	}
-	
+
 	@Override
 	public ArrayList<Object> find(Class<?> clazz, String where){
-		
-		
+
+
 		return td.find(clazz, where);
-		
-		
+
+
 	}
-	
-	
+
+
 	@Override
 	public Object findByPk(Class<?> clazz, int id) {
 		MetaModel m = MetaModel.of(clazz);
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		return td.findByPk(clazz, id, pkName);
 	}
-	
-	
+
+
 	@Override
 	public int updateRow(Object o) {
-		
-		Field[] fields = o.getClass().getDeclaredFields(); 
-		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
-		
+
+		Field[] fields = o.getClass().getDeclaredFields();
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<>();
+
 		MetaModel m = MetaModel.of(o.getClass());
-		
-	
+
+
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
@@ -133,33 +134,34 @@ public class ServicesImpl implements IServices {
 				f.setAccessible(false);
 			}
 		}
-		
-		
+
+
 		// return the list of field values, the name of the table, and if you want to commit the changes.
 		return td.updateRow(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
-		
-	}
-	
-	
 
-	@Override 
+	}
+
+
+
+
+	@Override
 	public int rollback() {
 		// will rollback to last commit/savepoint/rollback
 		// basically just call the SQL rollback command
-		
-		
+
+
 		return -1;
 		// return TableDao.roll()
 		// this should return 1 if successful, -1 if unsuccessful
-		
+
 	}
-	
+
 	@Override
 	public int commit() {
 		// will commit saved changes
 		// basically just the SQL commit command
-		
-		
+
+
 		return -1;
 		// return tableDao.commit()
 		// this should return 1 if successful, -1 if unsuccessful
@@ -168,9 +170,9 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public void alter(Class<?> clazz) {
-		
+
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		try {
 			TableDao.alter(m);
 		} catch (IllegalAccessException | SQLException e) {
@@ -181,9 +183,9 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public void truncate(Class<?> clazz) {
-		
+
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		try {
 			TableDao.truncate(m);
 		} catch (SQLException e) {
@@ -194,22 +196,22 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public void drop(Class<?> clazz) {
-	MetaModel m = MetaModel.of(clazz);
-		
+		MetaModel m = MetaModel.of(clazz);
+
 		try {
 			TableDao.drop(m);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 
 	@Override
 	public void renameTable(Class<?> clazz, String oldName) {
-		
-	MetaModel m = MetaModel.of(clazz);
-		
+
+		MetaModel m = MetaModel.of(clazz);
+
 		try {
 			TableDao.renameTable(m, oldName);
 		} catch (SQLException e) {
@@ -221,16 +223,16 @@ public class ServicesImpl implements IServices {
 	@Override
 	public void renameColumn(Class<?> clazz, String oldName, String newName) {
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		try {
 			TableDao.renameColumn(m, oldName, newName);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-		
+
 }
 
 
