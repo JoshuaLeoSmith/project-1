@@ -164,27 +164,67 @@ public class DMLDao {
 	
 	public ArrayList<Object> find(Class<?> clazz, String where){
 		
+		ArrayList<Object> found = new ArrayList<Object>();
 		try{
 			
 			String schema = ConnectionUtil.getSchema();
-			String tableName = clazz.getAnnotation(Entity.class).tableName();
 			
-			
-			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + where;
+			String sql = "SELECT * FROM " + schema + "." + clazz.getAnnotation(Entity.class).tableName() + " WHERE " + where;
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
-					
-			return null;
+			ResultSet rs;
 			
+			if((rs = stmt.executeQuery()) != null) {
+				while(rs.next()) {
+					try {
+						Constructor[] cons = clazz.getConstructors();
+						Constructor c = cons[2];
+						int parameterCount = c.getParameterCount();	
+						Parameter[] parameters = c.getParameters();
+						Object[] values = new Object[parameterCount];
+						
+						int count = 1;
+						for(Parameter p : parameters) {
+							String t = p.getParameterizedType().getTypeName();
+							if(t.equals("int")) {
+								values[count-1] = rs.getInt(count);
+							}else if(t.equals("class java.lang.String")) {
+								values[count-1] = rs.getString(count);
+							}else if(t.equals("double")) {
+								values[count-1] = rs.getDouble(count);
+							} else if(t.equals("byte")) {
+								values[count-1] = rs.getByte(count);
+							} else if(t.equals("short")) {
+								values[count-1] = rs.getShort(count);
+							}else if (t.equals("long")) {
+								values[count-1] = rs.getLong(count);
+							}else if (t.equals("boolean")) {
+								values[count-1] = rs.getBoolean(count);
+							}else if (t.equals("char")) {
+								values[count-1] = rs.getString(count);
+							}else {
+								values[count-1] = rs.getObject(count);
+							}
+							
+							count++;
+						}
+						Object ro = c.newInstance(values);
+						found.add(ro);
+				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					logger.error("Exception thrown...");
+					e.printStackTrace();
+					return found;
+					}
+				}
+			}
 		} catch(SQLException e) {
 			logger.error("SQLException thrown... cannot access the database...");
 			e.printStackTrace();
-			return null;
+			return found;
 		}
 		
-		
-		
+		return found;
 	}
 	
 	
@@ -232,13 +272,13 @@ public class DMLDao {
 							values[count-1] = rs.getObject(count);
 						}
 						
-						//System.out.println(values[count-1].getClass().getName());
 						count++;
 					}
 					Object ro = c.newInstance(values);
 					
 					return ro;
 				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					logger.error("Exception thrown...");
 					e.printStackTrace();
 					return null;
 				}
