@@ -582,7 +582,7 @@ class DummyJoinTable {
 	@Id
 	@ManyToMany
 	@JoinColumn(columnName = "acc_id", mappedByColumn = "id", mappedByTable = "dummy_account")
-	private int acc_id;
+	private List<Integer> acc_id;
 
 	@Id
 	@OneToOne

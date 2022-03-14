@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.revature.Relation;
 import com.revature.annotations.ManyToMany;
 import com.revature.annotations.ManyToOne;
 import com.revature.annotations.OneToMany;
@@ -16,4 +17,5 @@ public interface GenericField {
 	String getName();
 	Class<?> getType();
 	String getColumnName();
+	Relation getRelation();
 }

@@ -77,4 +77,9 @@ public class PrimaryKeyField implements GenericField {
 	public String toString() {
 		return "PrimaryKeyField [field=" + field + "]";
 	}
+
+	@Override
+	public Relation getRelation() {
+		return relation;
+	}
 }
