@@ -8,7 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
 import com.revature.annotations.Entity;
@@ -34,7 +36,7 @@ public class DMLDao {
 		
 		try{
 			
-			String schema = "'" + ConnectionUtil.getSchema() + "'";
+			String schema = ConnectionUtil.getSchema();
 			
 			
 			String values = "(";
@@ -43,8 +45,14 @@ public class DMLDao {
 			
 			for(String s : colNameToValue.keySet()) {
 				
-				colNames = colNames + s + ",";
-				values = values + "'" + String.valueOf(colNameToValue.get(s)) + "',";
+				String value = String.valueOf(colNameToValue.get(s));
+				if(value.equals("null")) {
+					value = "DBNull.value";
+					continue;
+				}
+				
+				colNames = colNames + "\"" + s + "\",";
+				values = values + "'" + value + "',";
 				
 			}
 			
@@ -54,10 +62,10 @@ public class DMLDao {
 			
 			
 			
-			String sql = "INSERT INTO " + schema + "." + tableName + " " + colNames + " VALUES " + values + " RETURNING " + pkName;
+			String sql = "INSERT INTO " + schema + "." + "\"" + tableName + "\" " + colNames + " VALUES " + values + " RETURNING " + "\"" + pkName + "\"";
 			
-			
-			
+			System.out.println(sql);
+			//System.out.println(sql);
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 		
@@ -94,11 +102,11 @@ public class DMLDao {
 		try{
 			String schema = ConnectionUtil.getSchema();
 			
-			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + pkName + "=" + "?";
+			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + "\"" + pkName + "\"=" + id;
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
-			stmt.setInt(1, id);
+			//stmt.setInt(1, id);
 			
 			stmt.execute();
 			
@@ -127,7 +135,7 @@ public class DMLDao {
 			
 			String schema = ConnectionUtil.getSchema();
 			
-			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + where + " RETURNING " + pkName;
+			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + where + " RETURNING " + "\"" + pkName + "\"";
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
@@ -162,14 +170,15 @@ public class DMLDao {
 		}
 	}
 	
-	public ArrayList<Object> find(Class<?> clazz, String where){
+	public ArrayList<Object> find(Class<?> clazz, String where, String tableName){
 		
 		ArrayList<Object> found = new ArrayList<Object>();
 		try{
 			
 			String schema = ConnectionUtil.getSchema();
 			
-			String sql = "SELECT * FROM " + schema + "." + clazz.getAnnotation(Entity.class).tableName() + " WHERE " + where;
+			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + where;
+			//System.out.println(sql);
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
@@ -179,7 +188,16 @@ public class DMLDao {
 				while(rs.next()) {
 					try {
 						Constructor[] cons = clazz.getConstructors();
-						Constructor c = cons[2];
+						int max = 0;
+						int ind = 0;
+						for(int i =0; i<cons.length; i++) {
+							int paramNumbers = cons[i].getParameterCount();
+							if(paramNumbers > max) {
+								max = paramNumbers;
+								ind = i;
+							}
+						}
+						Constructor c = cons[ind];
 						int parameterCount = c.getParameterCount();	
 						Parameter[] parameters = c.getParameters();
 						Object[] values = new Object[parameterCount];
@@ -189,7 +207,7 @@ public class DMLDao {
 							String t = p.getParameterizedType().getTypeName();
 							if(t.equals("int")) {
 								values[count-1] = rs.getInt(count);
-							}else if(t.equals("class java.lang.String")) {
+							}else if(t.equals("java.lang.String")) {
 								values[count-1] = rs.getString(count);
 							}else if(t.equals("double")) {
 								values[count-1] = rs.getDouble(count);
@@ -203,12 +221,18 @@ public class DMLDao {
 								values[count-1] = rs.getBoolean(count);
 							}else if (t.equals("char")) {
 								values[count-1] = rs.getString(count);
-							}else {
+							} else if(t.equals("java.time.LocalDate")) {
+								values[count-1] = rs.getDate(count).toLocalDate();
+								//dateToConvert.toInstant()
+							   //   .atZone(ZoneId.systemDefault())
+							   //   .toLocalDate();
+							} else {
 								values[count-1] = rs.getObject(count);
-							}
+							} 
 							
 							count++;
 						}
+						
 						Object ro = c.newInstance(values);
 						found.add(ro);
 				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -298,24 +322,14 @@ public class DMLDao {
 			String schema = ConnectionUtil.getSchema();
 			
 			
-			String values = "(";
-			String colNames = "(";
-			
-			
-			for(String s : colNameToValue.keySet()) {
-				
-				colNames = colNames + s + ",";
-				values = values + "'" + String.valueOf(colNameToValue.get(s)) + "',";
-				
-			}
-			
-			colNames = colNames.substring(0, colNames.length()-1) + ")";
-			values = values.substring(0, values.length()-1) + ")";
+			//String setVals = "";
+			//for(String s : colNameToValue.keySet()) {
+			//	setVals = setVals + 
+		//	}
 			
 			
 			
-			
-			String sql = "INSERT INTO " + schema + "." + tableName + " " + colNames + " VALUES " + values + " RETURNING " + pkName;
+			String sql = "UPDATE " + schema + "." + tableName + " SET ";
 			
 			
 			

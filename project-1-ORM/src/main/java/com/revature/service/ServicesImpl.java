@@ -1,4 +1,8 @@
 package com.revature.service;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -6,6 +10,9 @@ import java.util.LinkedHashMap;
 
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
+import com.revature.annotations.Exclude;
+import com.revature.annotations.Id;
+import com.revature.annotations.JoinColumn;
 import com.revature.dao.DMLDao;
 import com.revature.dao.TableDao;
 import com.revature.util.MetaModel;
@@ -43,19 +50,60 @@ public class ServicesImpl implements IServices {
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
-				if (f.getAnnotation(Column.class) != null) {
-					colNameToValue.put(f.getName(), f.get(o));
+				
+				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
+					continue;
 				}
+			
+				if (f.getAnnotation(Column.class) != null) {
+					String keyVal = f.getAnnotation(Column.class).columnName();
+					if (keyVal.equals("")) {
+						colNameToValue.put(f.getName(), f.get(o));
+					}else {
+						colNameToValue.put(keyVal, f.get(o));
+					}
+				} else if (f.getAnnotation(Id.class) != null) {
+					if((int)f.get(o) == 0) {
+						continue;
+					}
+					String keyVal = f.getAnnotation(Id.class).columnName();
+					if (keyVal.equals("")) {
+						colNameToValue.put(f.getName(), f.get(o));
+					}else {
+						colNameToValue.put(keyVal, f.get(o));
+					}
+				} else {
+					String keyVal = f.getName();
+					colNameToValue.put(keyVal, f.get(o));
+				}
+				
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
 				f.setAccessible(false);
 			}
 		}
+		
+		String tableName = o.getClass().getAnnotation(Entity.class).tableName();
+		if (tableName.equals("")){
+			tableName = o.getClass().getName();
+		    int firstChar;
+		    firstChar = tableName.lastIndexOf ('.') + 1;
+		    if ( firstChar > 0 ) {
+		    	tableName = tableName.substring ( firstChar );
+		      }
+			
+		}
+		
+		String pkName = m.getPrimaryKey().getColumnName();
+		
+		if(pkName.equals("")) {
+			pkName = m.getPrimaryKey().getName();
+		}
 
 
 		// return the list of field values, the name of the table, and if you want to commit the changes.
-		return td.updateRow(colNameToValue, o.getClass().getAnnotation(Entity.class).tableName(), m.getPrimaryKey().getColumnName(), true);
+		return td.insert(colNameToValue, tableName, pkName, true);
 		// this should return the id of the new row created, or -1 if failed.
 	}
 
@@ -69,7 +117,21 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		if (tableName.equals("")){
+			tableName = clazz.getName();
+		    int firstChar;
+		    firstChar = tableName.lastIndexOf ('.') + 1;
+		    if ( firstChar > 0 ) {
+		    	tableName = tableName.substring ( firstChar );
+		      }
+			
+		}
+		
 		String pkName = m.getPrimaryKey().getColumnName();
+		
+		if(pkName.equals("")) {
+			pkName = m.getPrimaryKey().getName();
+		}
 
 		return td.remove(tableName, id, pkName, save);
 		// return TableDao.removeFromTable(id)
@@ -87,7 +149,20 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		if (tableName.equals("")){
+			tableName = clazz.getName();
+		    int firstChar;
+		    firstChar = tableName.lastIndexOf ('.') + 1;
+		    if ( firstChar > 0 ) {
+		    	tableName = tableName.substring ( firstChar );
+		      }
+			
+		}
 		String pkName = m.getPrimaryKey().getColumnName();
+		
+		if(pkName.equals("")) {
+			pkName = m.getPrimaryKey().getName();
+		}
 
 		return td.remove(tableName, where, pkName, save);
 		// return TableDao.removeFromTable(where)
@@ -97,8 +172,17 @@ public class ServicesImpl implements IServices {
 	@Override
 	public ArrayList<Object> find(Class<?> clazz, String where){
 
-
-		return td.find(clazz, where);
+		String tableName = clazz.getAnnotation(Entity.class).tableName();
+		if (tableName.equals("")){
+			tableName = clazz.getName();
+		    int firstChar;
+		    firstChar = tableName.lastIndexOf ('.') + 1;
+		    if ( firstChar > 0 ) {
+		    	tableName = tableName.substring ( firstChar );
+		      }
+			
+		}
+		return td.find(clazz, where, tableName);
 
 
 	}
@@ -175,7 +259,7 @@ public class ServicesImpl implements IServices {
 
 		try {
 			TableDao.alter(m);
-		} catch (IllegalAccessException | SQLException e) {
+		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

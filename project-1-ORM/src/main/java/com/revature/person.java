@@ -62,6 +62,29 @@ public class person {
 		person.logBot.info("Created blank User");
 	}
 
+	
+	
+	public person(int userID, String username, String passwordHash, int accessLevel, boolean verified, String email,
+			String phoneNumber, String fName, String lName, String address, LocalDate dob, double balance,
+			int testSerial) {
+		super();
+		this.userID = userID;
+		this.username = username;
+		this.passwordHash = passwordHash;
+		this.accessLevel = accessLevel;
+		this.verified = verified;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+		this.fName = fName;
+		this.lName = lName;
+		this.address = address;
+		this.dob = dob;
+		this.balance = balance;
+		this.testSerial = testSerial;
+	}
+
+
+
 	public person(person oldPerson) {
 		this.userID=oldPerson.userID;
 		this.username = oldPerson.username;

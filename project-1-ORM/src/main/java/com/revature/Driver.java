@@ -15,7 +15,7 @@ public class Driver {
 		//i.insert(new TesterClass("uname", "pwd", 12.22), true);
 
 
-		i.findByPk(TesterClass.class, 1);
+		//i.findByPk(TesterClass.class, 1);
 
 		Simpl.create(person.class);
 		Simpl.create(Account.class);
@@ -46,16 +46,25 @@ public class Driver {
 		Account SuperAccount = new Account(superMan, 1200000);
 
 		Simpl.insert(batman, false);
-		// Simpl.insert(superMan, true);
+		//Simpl.insert(new person(), false);
+		Simpl.insert(superMan, true);
+		
+		
+	
+		//Simpl.insert(SuperAccount, false);
+		//Simpl.insert(BruceAccount, false);
 
-		// Simpl.insert(SuperAccount, false);
-		// Simpl.insert(BruceAccount, false);
+		
+		//System.out.println(Simpl.removeByPk(person.class, 5, true));
+		//System.out.println(Simpl.remove(person.class, "\"userID\" > 2", false));
+		
+		System.out.println(Simpl.find(person.class, "\"userID\" =1"));
 
+		
+		//i.create(TesterClass.class);
 
-		i.create(TesterClass.class);
-
-		i.insert(new TesterClass(1,"uname1", "pwd", 12.22), true);
-		i.insert(new TesterClass(1, "uname3", "pwd", 12.22), true);
+		//i.insert(new TesterClass(1,"uname1", "pwd", 12.22), true);
+		//i.insert(new TesterClass(1, "uname3", "pwd", 12.22), true);
 
 		//i.insert(new TesterClass("uname1", "pwd1", 12.55), true);
 
