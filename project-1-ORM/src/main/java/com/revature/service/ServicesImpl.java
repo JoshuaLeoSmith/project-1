@@ -19,7 +19,8 @@ public class ServicesImpl implements IServices {
 	@Override
 	public int create(Class<?> clazz) {
 		try {
-			TableDao.insert(MetaModel.of(clazz));
+			TableDao td = new TableDao();
+			td.insert(MetaModel.of(clazz));
 			return 1;
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();

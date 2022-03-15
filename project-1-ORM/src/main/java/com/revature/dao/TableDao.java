@@ -107,7 +107,7 @@ public class TableDao {
 
 	}
 
-	public static void insert(MetaModel<?> allFieldsInTable)
+	public void insert(MetaModel<?> allFieldsInTable)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -128,7 +128,7 @@ public class TableDao {
 			sql += "create table if not exists";
 		break;
 		case ("update"):
-			TableDao.alter(allFieldsInTable);
+			alter(allFieldsInTable);
 		return;
 		default:
 			throw new IllegalArgumentException("Not a valid managment style. Change to validate, create, or update");
@@ -201,7 +201,7 @@ public class TableDao {
 	}
 
 	@SuppressWarnings("resource")
-	public static void alter(MetaModel<?> allFieldsInTable)
+	public void alter(MetaModel<?> allFieldsInTable)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -437,7 +437,7 @@ public class TableDao {
 
 	}
 
-	public static void truncate(MetaModel<?> table) throws SQLException {
+	public void truncate(MetaModel<?> table) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -447,7 +447,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void drop(MetaModel<?> table) throws SQLException {
+	public void drop(MetaModel<?> table) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -457,7 +457,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void renameTable(MetaModel<?> table, String oldName) throws SQLException {
+	public void renameTable(MetaModel<?> table, String oldName) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -468,7 +468,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
+	public void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -480,12 +480,18 @@ public class TableDao {
 
 	}
 
-	private static void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
+	private void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		List<ForeignKeyField> fks = table.getForeignKeys();
+		List<ForeignKeyField> fks;
+		try {
+			fks = table.getForeignKeys();
+		} catch (RuntimeException e) {
+			return;
+		}
+
 		List<String> keys = new ArrayList<>();
 
 		// List<String> currentColumns = new ArrayList<>();
