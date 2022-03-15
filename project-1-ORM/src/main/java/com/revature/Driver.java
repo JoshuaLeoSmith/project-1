@@ -14,7 +14,6 @@ public class Driver {
 
 		//i.insert(new TesterClass("uname", "pwd", 12.22), true);
 
-
 		i.findByPk(TesterClass.class, 1);
 
 		Simpl.create(person.class);

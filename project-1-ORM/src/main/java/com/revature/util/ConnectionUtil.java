@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -50,7 +51,7 @@ public class ConnectionUtil {
 		return "create";
 	}
 
-	private static void startConnection() {
+	static {
 		try {
 			Properties prop=new Properties();
 			prop.load(new FileReader( "src/main/resources/config.properties"));
@@ -76,7 +77,34 @@ public class ConnectionUtil {
 		}
 	}
 
+	public static void changeMaxPoolSize(int size) {
+		cpds.setMaxPoolSize(size);
+	}
+
+	public static void changeMinPoolSize(int size) {
+		cpds.setMinPoolSize(size);
+	}
+
+	public static void changeDriverClass(String driver) throws PropertyVetoException {
+		cpds.setDriverClass(driver);
+	}
+
 	public static Connection getConnection() {
+		/*
+		 * try { if ((conn != null) && !conn.isClosed()) { return conn; } } catch
+		 * (SQLException e) { logBot.error("The connection has an error");
+		 * e.printStackTrace(); }
+		 */
+		try {
+			conn = cpds.getConnection();
+		} catch (SQLException e) {
+			logBot.error("Unable to connect to the database");
+			e.printStackTrace();
+		}
+		return conn;
+	}
+
+	public static Connection getSingleConnection() {
 		try {
 			if ((conn != null) && !conn.isClosed()) {
 				return conn;
@@ -85,16 +113,24 @@ public class ConnectionUtil {
 			logBot.error("The connection has an error");
 			e.printStackTrace();
 		}
-
 		try {
-			if (!connected) {
-				startConnection();
-			}
-			conn = cpds.getConnection();
+			Properties prop = new Properties();
+			prop.load(new FileReader("src/main/resources/config.properties"));
+			String url = prop.getProperty("url");
+			String userName = prop.getProperty("username");
+			String password = prop.getProperty("password");
+			conn = DriverManager.getConnection(url, userName, password);
+		} catch (FileNotFoundException e) {
+			logBot.error("No file exists for the properties");
+			e.printStackTrace();
+		} catch (IOException e) {
+			logBot.error("Can't read from the properties file");
+			e.printStackTrace();
 		} catch (SQLException e) {
 			logBot.error("Unable to connect to the database");
 			e.printStackTrace();
 		}
 		return conn;
 	}
+
 }
