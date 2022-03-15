@@ -15,12 +15,13 @@ import org.apache.log4j.Logger;
 
 import com.revature.Management;
 import com.revature.Relation;
+import com.revature.annotations.Column;
 import com.revature.dao.TableDao;
 
 public class Configuration {
 	private static Logger logger = Logger.getLogger(Configuration.class);
 	private List<MetaModel<Class<?>>> metaModels;
-	private TableDao tbdao = new TableDao();
+	private TableDao tbdao;
 
 	private String url;
 	private String schema;
@@ -32,11 +33,18 @@ public class Configuration {
 		this("./src/main/resources/");
 	}
 
+	// for testing only
+	public Configuration(TableDao tbdao) throws FileNotFoundException {
+		this("./src/main/resources/");
+		this.tbdao = tbdao;
+	}
+
 	public Configuration(String pathname) throws FileNotFoundException {
 		super();
 		File config = new File(pathname + "config.properties");
 		Scanner scan = new Scanner(config);
-		List<String> missing = new ArrayList<>(Arrays.asList("url", "schema", "username", "password", "schemaManagement"));
+		List<String> missing = new ArrayList<>(
+				Arrays.asList("url", "schema", "username", "password", "schemaManagement"));
 		metaModels = new ArrayList<>();
 
 		while (scan.hasNext()) {
@@ -74,13 +82,15 @@ public class Configuration {
 			String msg = missing.stream().collect(Collectors.joining(", "));
 			throw new IllegalStateException("The following fields are missing: " + msg);
 		}
+		
+		tbdao = new TableDao();
 	}
 
 	public Configuration(String url, String schema, String username, String password, Management type) {
 		super();
 		List<String> missing = new ArrayList<>();
 		metaModels = new ArrayList<>();
-		
+
 		if (url != null && !url.isEmpty()) {
 			this.url = url;
 		} else {
@@ -106,47 +116,74 @@ public class Configuration {
 		} else {
 			missing.add("schemaManagement");
 		}
-		
+
 		if (!missing.isEmpty()) {
 			Collectors.joining();
 			String msg = missing.stream().collect(Collectors.joining(", "));
 			throw new IllegalStateException("The following fields are missing: " + msg);
 		}
+		
+		tbdao = new TableDao();
 	}
-
-	public void setTables(Collection<Class<?>> clazzes) {
-		for (Class<?> clazz : clazzes)
-			metaModels.add(MetaModel.of(clazz));
-
-		validate();
+	
+	public List<String> getTables() {
+		return metaModels.stream()
+				.map(m -> m.getClassName())
+				.collect(Collectors.toList());
+	}
+	
+	public void addTable(Class<?> clazz) {
+		MetaModel<Class<?>> meta = MetaModel.of(clazz);
 		try {
-			buildTables();
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e.getMessage());
+			meta.getPrimaryKey();
+		} catch (RuntimeException e) {
 		}
-	}
-
-	public void setTables(Class<?>... clazzes) {
-		for (Class<?> clazz : clazzes)
-			metaModels.add(MetaModel.of(clazz));
-
-		validate();
 		try {
-			buildTables();
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e.getMessage());
+			meta.getForeignKeys();
+		} catch (RuntimeException e) {
 		}
+		try {
+			meta.getColumns();
+		} catch (RuntimeException e) {
+		}
+		
+		metaModels.add(meta);
 	}
 
-	private void validate() {
+	public void addTables(Collection<Class<?>> clazzes) {
+		for (Class<?> clazz : clazzes)
+			addTable(clazz);
+	}
+
+	public void addTables(Class<?>... clazzes) {
+		for (Class<?> clazz : clazzes)
+			addTable(clazz);
+	}
+
+	public void validate() {
 		for (MetaModel<?> meta : metaModels) {
-			for (ForeignKeyField column : meta.getForeignKeys()) {
+			List<ForeignKeyField> fkeys;
+
+			try {
+				fkeys = meta.getForeignKeys();
+			} catch (RuntimeException e) {
+				logger.warn("No foreign keys found in " + meta.getClassName() + ". Skipping");
+				continue;
+			}
+
+			for (ForeignKeyField column : fkeys) {
 				MetaModel<Class<?>> temp = getModelByName(column.getMappedByTable());
 
 				if (temp != null) {
 					try {
 						GenericField column2 = temp.getFieldByName(column.getMappedByColumn());
 
+						if (!column.getType().equals(column2.getType())) {
+							throw new IllegalStateException(
+									"Miss-matching types, " + column.getName() + " = " + column.getType() + ", "
+											+ column2.getName() + " = " + column2.getType());
+						}
+						
 						switch (column.getRelation()) {
 						case OneToOne:
 							if (column2.getRelation() != Relation.OneToOne) {
@@ -180,8 +217,8 @@ public class Configuration {
 
 						}
 					} catch (RuntimeException e) {
-						throw new IllegalStateException("Unable to find field " + column.getColumnName() + " in class "
-								+ column.getMappedByTable());
+						throw new IllegalStateException("Unable to find field " + column.getMappedByColumn()
+								+ " in class " + column.getMappedByTable());
 					}
 
 				} else {
@@ -189,9 +226,15 @@ public class Configuration {
 				}
 			}
 		}
+		
+		try {
+			buildTables();
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e.getMessage());
+		}
 	}
 
-	public void buildTables() throws ClassNotFoundException {
+	private void buildTables() throws ClassNotFoundException {
 		metaModels.forEach(m -> {
 			try {
 				tbdao.insert(m);
@@ -202,14 +245,18 @@ public class Configuration {
 			}
 		});
 	}
-	
+
+	public void reset() {
+		metaModels.clear();
+	}
+
 	public String getFullUrl() {
 		StringBuilder str = new StringBuilder();
-		
+
 		str.append(url);
 		str.append("?currentSchema=");
 		str.append(schema);
-		
+
 		return str.toString();
 	}
 
@@ -235,13 +282,20 @@ public class Configuration {
 
 	public MetaModel<Class<?>> getModelByName(String name) {
 		Optional<MetaModel<Class<?>>> meta = metaModels.stream()
-				.filter(m -> m.getSimpleClassName().equals(name) || m.getTableName().equals(name)).findFirst();
+				.filter(m -> {
+					System.out.println(name);
+					System.out.println("\t" + m.getSimpleClassName());
+					System.out.println("\t" + m.getTableName());
+					return m.getSimpleClassName().equals(name) || m.getTableName().equals(name);
+				}).findFirst();
 
 		return meta.isPresent() ? meta.get() : null;
 	}
 
 	public MetaModel<Class<?>> getModelByClass(Class<?> clazz) {
-		Optional<MetaModel<Class<?>>> meta = metaModels.stream().filter(m -> m.getClass().equals(clazz)).findFirst();
+		Optional<MetaModel<Class<?>>> meta = metaModels.stream()
+				.filter(m -> m.getClass().equals(clazz))
+				.findFirst();
 
 		return meta.isPresent() ? meta.get() : null;
 	}
