@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -129,15 +130,14 @@ public class MetaModel<T> {
 	public String getClassName() {
 		return clazz.getName(); // returns the package of where the class came from as well
 	}
-	
+
 	public String getTableName() {
 		return clazz.getAnnotation(Entity.class).tableName();
 	}
 
 	// to use this function, you must first call all of the get methods of MetaModel
-	// for each instance before
-	// calling this function so that all of the field have had at least one chance
-	// to be initialized
+	// for each instance before calling this function so that all of the field have
+	// had at least one chance to be initialized
 	public GenericField getFieldByName(String name) {
 		if (primaryKeyField != null) {
 			if (primaryKeyField.getName().equals(name) || primaryKeyField.getColumnName().equals(name)) {
@@ -161,14 +161,13 @@ public class MetaModel<T> {
 	}
 
 	// to use this function, you must first call all of the get methods of MetaModel
-	// for each instance before
-	// calling this function so that all of the field have had at least one chance
-	// to be initialized
+	// for each instance before calling this function so that all of the field have
+	// had at least one chance to be initialized
 	public Set<GenericField> getAllFields() {
 		Set<GenericField> allFields = new HashSet<>();
 		if (primaryKeyField != null)
 			allFields.add(primaryKeyField);
-		
+
 		allFields.addAll(foreignKeyFields);
 		allFields.addAll(columnFields);
 
@@ -192,5 +191,24 @@ public class MetaModel<T> {
 			}
 		}
 		return fieldValues;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(clazz, columnFields, foreignKeyFields, primaryKeyField);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetaModel other = (MetaModel) obj;
+		return Objects.equals(clazz, other.clazz) && Objects.equals(columnFields, other.columnFields)
+				&& Objects.equals(foreignKeyFields, other.foreignKeyFields)
+				&& Objects.equals(primaryKeyField, other.primaryKeyField);
 	}
 }
