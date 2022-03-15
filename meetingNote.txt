@@ -8,10 +8,10 @@ basic crud operations
 		- numeric -> done
 		- date-time -> done
 	- serial, not null, unique, default -> done
-	- foreign key
+	- foreign key -> done
 
 - update a table -> done
-	- add foreign keys 
+	- add foreign keys -> done
 	- change primary key -> Maybe done?
 
 - remove a table -> done
@@ -32,21 +32,39 @@ basic crud operations
 	- all
 	- having (Stretch Goal)
 
-- schema creation (if doesn't exist)
+- schema creation (if doesn't exist) -> done
 
 annotations
 - table
-	- name
+	- name -> done
 - column
-	- name
-	- unique
-	- nullable
-	- length (Stretch Goal)
-	- precision
-- id (primary)
-- oneToMany and ManyToOne (foreign key)
-	- column varaible name
-	- table class
+	- name -> done
+	- unique -> done
+	- nullable -> done
+	- length (Stretch Goal) -> done
+	- precision -> done
+- id (primary) -> done
+- oneToMany and ManyToOne (foreign key) -> done
+	- column varaible name -> done
+	- table class -> done
 	- cascade
-- ManyToMany
+- ManyToMany -> done
 	
+	
+	
+TODO:
+1. Allow user to do any random SQL command to bypass us
+2. Return a list of all items in list
+3. Return a list of all items that pass a criteria
+4. Possibly add getter/setter annotation? (What's the purpose)
+5. Improve readability of ReadMe
+6. Add cache, and a way for the user to get it
+7. Add a license
+8. Transactions?
+9. Documentation of all features with examples
+10. Aggregate functions? Eh, probably not
+11. Make sure it can actually be used as a Maven dependency on other computer
+12. Auto detection of classes like Hibernate does
+13. Lightweight Session Creation
+14. Web layer/EC2? How to make that relevant?
+15. Composite Key 
