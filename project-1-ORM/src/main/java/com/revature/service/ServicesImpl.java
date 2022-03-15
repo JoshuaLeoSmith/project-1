@@ -20,13 +20,14 @@ import com.revature.util.MetaModel;
 
 public class ServicesImpl implements IServices {
 
-	private static DMLDao td = new DMLDao();
-
+	private final DMLDao td = new DMLDao();
+	private final TableDao tableDao = new TableDao();
 
 	@Override
 	public int create(Class<?> clazz) {
 		try {
-			TableDao.insert(MetaModel.of(clazz));
+			TableDao td = new TableDao();
+			td.insert(MetaModel.of(clazz));
 			return 1;
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
@@ -258,7 +259,7 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		try {
-			TableDao.alter(m);
+			tableDao.alter(m);
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -271,7 +272,7 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		try {
-			TableDao.truncate(m);
+			tableDao.truncate(m);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -283,7 +284,7 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		try {
-			TableDao.drop(m);
+			tableDao.drop(m);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -297,7 +298,7 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		try {
-			TableDao.renameTable(m, oldName);
+			tableDao.renameTable(m, oldName);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -309,7 +310,7 @@ public class ServicesImpl implements IServices {
 		MetaModel m = MetaModel.of(clazz);
 
 		try {
-			TableDao.renameColumn(m, oldName, newName);
+			tableDao.renameColumn(m, oldName, newName);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

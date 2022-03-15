@@ -34,24 +34,25 @@ public class TableDao {
 
 	private static String getSQLType(ColumnField myField) {
 		String modifications = "";
+		Class<?> type = myField.getType();
 
-		if (myField.getType() == int.class) {
+		if (type == int.class) {
 			modifications += " int";
 		} // Test against Integer
-		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)) {
+		else if ((type == byte.class) || (type == short.class)) {
 			modifications += " smallint";
-		} else if (myField.getType() == long.class) {
+		} else if (type == long.class) {
 			modifications += " bigint";
-		} else if ((myField.getType() == float.class) || (myField.getType() == double.class)) {
+		} else if ((type == float.class) || (type == double.class)) {
 			modifications += " numeric(" + myField.getPercision() + ", " + myField.getScale() + ")";
-		} else if (myField.getType() == boolean.class) {
+		} else if (type == boolean.class) {
 			modifications += " boolean";
-		} else if (myField.getType() == char.class) {
+		} else if (type == char.class) {
 			modifications += " char(1)";
-		} else if (myField.getType() == String.class) {
+		} else if (type == String.class) {
 			modifications += " varchar(" + myField.getLength() + ")";
-		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
-				|| (myField.getType() == java.time.LocalDate.class)) {
+		} else if ((type == java.util.Date.class) || (type == java.sql.Date.class)
+				|| (type == java.time.LocalDate.class)) {
 			modifications += " date";
 		} else {
 			throw new IllegalArgumentException("Invalid data type for a Column key");
@@ -106,7 +107,7 @@ public class TableDao {
 
 	}
 
-	public static void insert(MetaModel<?> allFieldsInTable)
+	public void insert(MetaModel<?> allFieldsInTable)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -119,16 +120,21 @@ public class TableDao {
 		 * update the schema. create: creates the schema, destroying previous data.
 		 *
 		 */
-		if (TableDao.managment.toLowerCase().equals("validate")) {
+
+		switch (TableDao.managment.toLowerCase()) {
+		case ("validate"):
 			throw new IllegalArgumentException("Can't insert tables on validate control. Change control to insert.");
-		} else if (TableDao.managment.toLowerCase().equals("create")) {
+		case ("create"):
 			sql += "create table if not exists";
-		} else if (TableDao.managment.toLowerCase().equals("update")) {
-			TableDao.alter(allFieldsInTable);
-			return;
-		} else {
+		break;
+		case ("update"):
+			alter(allFieldsInTable);
+		return;
+		default:
 			throw new IllegalArgumentException("Not a valid managment style. Change to validate, create, or update");
+
 		}
+
 		name = "\"" + name + "\"";
 		sql += " " + TableDao.schema + "." + name + "(";
 
@@ -144,14 +150,16 @@ public class TableDao {
 		}
 		sql += PfieldName;
 
+
+		Class<?> type = PField.getType();
 		if (PField.isSerial()) {
 			sql += " serial";
-		} else if (PField.getType() == int.class) {
+		} else if (type == int.class) {
 			sql += " int";
 		} // Test against Integer
-		else if ((PField.getType() == byte.class) || (PField.getType() == short.class)) {
+		else if ((type == byte.class) || (type == short.class)) {
 			sql += " smallint";
-		} else if (PField.getType() == long.class) {
+		} else if (type == long.class) {
 			sql += " bigint";
 		} else {
 			throw new IllegalArgumentException("Invalid data type for a primary key");
@@ -193,7 +201,7 @@ public class TableDao {
 	}
 
 	@SuppressWarnings("resource")
-	public static void alter(MetaModel<?> allFieldsInTable)
+	public void alter(MetaModel<?> allFieldsInTable)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -253,13 +261,14 @@ public class TableDao {
 			sql += " add";
 			sql += " column \"" + fieldName + "\"";
 
+			Class<?> type = PField.getType();
 			if (PField.isSerial()) {
 				sql += " serial";
-			} else if (PField.getType() == int.class) {
+			} else if (type == int.class) {
 				sql += " int";
-			} else if ((PField.getType() == byte.class) || (PField.getType() == short.class)) {
+			} else if ((type == byte.class) || (type == short.class)) {
 				sql += " smallint";
-			} else if (PField.getType() == long.class) {
+			} else if (type == long.class) {
 				sql += " bigint";
 			} else {
 				TableDao.conn.rollback();
@@ -428,7 +437,7 @@ public class TableDao {
 
 	}
 
-	public static void truncate(MetaModel<?> table) throws SQLException {
+	public void truncate(MetaModel<?> table) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -438,7 +447,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void drop(MetaModel<?> table) throws SQLException {
+	public void drop(MetaModel<?> table) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -448,7 +457,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void renameTable(MetaModel<?> table, String oldName) throws SQLException {
+	public void renameTable(MetaModel<?> table, String oldName) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -459,7 +468,7 @@ public class TableDao {
 		myStatment.execute();
 	}
 
-	public static void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
+	public void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -471,12 +480,18 @@ public class TableDao {
 
 	}
 
-	private static void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
+	private void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		List<ForeignKeyField> fks = table.getForeignKeys();
+		List<ForeignKeyField> fks;
+		try {
+			fks = table.getForeignKeys();
+		} catch (RuntimeException e) {
+			return;
+		}
+
 		List<String> keys = new ArrayList<>();
 
 		// List<String> currentColumns = new ArrayList<>();
