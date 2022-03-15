@@ -175,7 +175,7 @@ public class ServicesImpl implements IServices {
 
 		try {
 			TableDao.alter(m);
-		} catch (IllegalAccessException | SQLException e) {
+		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

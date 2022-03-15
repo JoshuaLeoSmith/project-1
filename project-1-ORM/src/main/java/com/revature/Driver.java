@@ -14,7 +14,6 @@ public class Driver {
 
 		//i.insert(new TesterClass("uname", "pwd", 12.22), true);
 
-
 		i.findByPk(TesterClass.class, 1);
 
 		Simpl.create(person.class);
@@ -45,17 +44,17 @@ public class Driver {
 
 		Account SuperAccount = new Account(superMan, 1200000);
 
-		Simpl.insert(batman, false);
+		// Simpl.insert(batman, false);
 		// Simpl.insert(superMan, true);
 
 		// Simpl.insert(SuperAccount, false);
 		// Simpl.insert(BruceAccount, false);
 
 
-		i.create(TesterClass.class);
+		// i.create(TesterClass.class);
 
-		i.insert(new TesterClass(1,"uname1", "pwd", 12.22), true);
-		i.insert(new TesterClass(1, "uname3", "pwd", 12.22), true);
+		// i.insert(new TesterClass(1,"uname1", "pwd", 12.22), true);
+		// i.insert(new TesterClass(1, "uname3", "pwd", 12.22), true);
 
 		//i.insert(new TesterClass("uname1", "pwd1", 12.55), true);
 
