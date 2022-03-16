@@ -36,9 +36,9 @@ public class ForeignKeyField implements GenericField {
 			}
 		}
 		
-		if (this.relation == Relation.None) {
+		if (this.relation == Relation.None || this.relation == Relation.OneToMany) {
 			throw new IllegalStateException(
-					"Provided field " + field.getName() + " can only have one declared relationship type");
+					"Provided field " + field.getName() + " must have one declared relationship type to not OneToMany");
 		}
 		
 		this.field = field;

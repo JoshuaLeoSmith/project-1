@@ -12,8 +12,10 @@ import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
+import com.revature.annotations.ManyToMany;
 import com.revature.annotations.ManyToOne;
 import com.revature.annotations.OneToMany;
+import com.revature.annotations.OneToOne;
 import com.revature.dao.TableDao;
 import com.revature.util.Configuration;
 import com.revature.util.MetaModel;
@@ -109,11 +111,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testSetTablesConnectedTables() {
-		List<Class<?>> list = new ArrayList<>();
-		list.add(BasicTablePrimary.class);
-		list.add(BasicTableForeign.class);
-
+	public void testSetTablesConnectedManyToOneTables() {
 		try {
 			doNothing().when(mockDao).insert(isA(MetaModel.class));
 		} catch (ClassNotFoundException e) {
@@ -123,15 +121,111 @@ public class ConfigurationTest {
 		}
 
 		defaultConfig.reset();
-		defaultConfig.addTable(BasicTablePrimary.class);
-		defaultConfig.addTable(BasicTableForeign.class);
+		defaultConfig.addTable(BasicTableOneToManyPrimary.class);
+		defaultConfig.addTable(BasicTableManyToOneForeign.class);
+		defaultConfig.validate();
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testSetTablesDisconnectedManyToOneTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableOneToOnePrimary.class);
+		defaultConfig.addTable(BasicTableManyToOneForeignInvalid.class);
+		defaultConfig.validate();
+	}
+	
+	@Test
+	public void testSetTablesConnectedOneToOneTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableOneToOnePrimary.class);
+		defaultConfig.addTable(BasicTableOneToOneForeign.class);
+		defaultConfig.validate();
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testSetTablesDisconnectedOneToOneTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableOneToManyPrimary.class);
+		defaultConfig.addTable(BasicTableOneToOneForeignInvalid.class);
+		defaultConfig.validate();
+	}
+	
+	@Test
+	public void testSetTablesConnectedManyToManyTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableManyToManyPrimary.class);
+		defaultConfig.addTable(BasicTableManyToManyForeign.class);
+		defaultConfig.validate();
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testSetTablesDisconnectedManyToManyTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableOneToManyPrimary.class);
+		defaultConfig.addTable(BasicTableManyToManyForeignInvalid.class);
+		defaultConfig.validate();
+	}
+	
+	@Test
+	public void testSetTablesConnectedRelationMismatchTables() {
+		try {
+			doNothing().when(mockDao).insert(isA(MetaModel.class));
+		} catch (ClassNotFoundException e) {
+			throw new AssertionError("This should never happen");
+		} catch (SQLException e) {
+			throw new AssertionError("This should never happen");
+		}
+
+		defaultConfig.reset();
+		defaultConfig.addTable(BasicTableOneToManyPrimary.class);
+		defaultConfig.addTable(BasicTableManyToOneForeign.class);
 		defaultConfig.validate();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesDisconnectedTable() {
 		List<Class<?>> list = new ArrayList<>();
-		list.add(BasicTableForeign.class);
+		list.add(BasicTableManyToOneForeign.class);
 
 		try {
 			doNothing().when(mockDao).insert(isA(MetaModel.class));
@@ -157,7 +251,7 @@ public class ConfigurationTest {
 		}
 
 		defaultConfig.reset();
-		defaultConfig.addTables(BasicTablePrimary.class, BasicTableForeignMismatch.class);
+		defaultConfig.addTables(BasicTableOneToManyPrimary.class, BasicTableForeignMismatch.class);
 		defaultConfig.validate();
 	}
 
@@ -200,7 +294,7 @@ public class ConfigurationTest {
 		}
 
 		defaultConfig.reset();
-		defaultConfig.addTables(BasicTable.class, BasicTablePrimary.class, BasicTableForeign.class);
+		defaultConfig.addTables(BasicTable.class, BasicTableOneToManyPrimary.class, BasicTableManyToOneForeign.class);
 
 		assertEquals(meta1, defaultConfig.getModelByName("basic"));
 	}
@@ -229,7 +323,7 @@ public class ConfigurationTest {
 
 	@Test
 	public void testGetModelByClassValid() {
-		MetaModel<Class<?>> meta1 = MetaModel.of(BasicTableForeign.class);
+		MetaModel<Class<?>> meta1 = MetaModel.of(BasicTableManyToOneForeign.class);
 		try {
 			meta1.getPrimaryKey();
 		} catch (RuntimeException e) {
@@ -244,9 +338,14 @@ public class ConfigurationTest {
 		}
 
 		defaultConfig.reset();
-		defaultConfig.addTables(BasicTable.class, BasicTablePrimary.class, BasicTableForeign.class);
+		defaultConfig.addTables(BasicTable.class, BasicTableOneToManyPrimary.class, BasicTableManyToOneForeign.class);
 
-		assertEquals(meta1, defaultConfig.getModelByName("BasicTableForeign"));
+		assertEquals(meta1, defaultConfig.getModelByName("BasicTableManyToOneForeign"));
+	}
+	
+	@Test
+	public void testGetFullUrl() {
+		assertEquals(defaultConfig.getFullUrl(), "jdbc:postgresql://team-5-ent.cvtq9j4axrge.us-east-1.rds.amazonaws.com:5432/postgres?currentSchema=test0");
 	}
 }
 
@@ -260,7 +359,19 @@ class BasicTable {
 }
 
 @Entity
-class BasicTablePrimary {
+class BasicTableForeignMismatch {
+	@Id(serial = true)
+	private int id;
+
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToManyPrimary")
+	@ManyToOne
+	private long owner;
+
+	private String name;
+}
+
+@Entity
+class BasicTableOneToManyPrimary {
 	@Id(serial = true)
 	@OneToMany
 	private int id;
@@ -269,11 +380,29 @@ class BasicTablePrimary {
 }
 
 @Entity
-class BasicTableForeign {
+class BasicTableOneToOnePrimary {
+	@Id(serial = true)
+	@OneToOne
+	private int id;
+
+	private String name;
+}
+
+@Entity
+class BasicTableManyToManyPrimary {
+	@Id(serial = true)
+	@ManyToMany
+	private int id;
+
+	private String name;
+}
+
+@Entity
+class BasicTableManyToOneForeign {
 	@Id(serial = true)
 	private int id;
 
-	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTablePrimary")
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToManyPrimary")
 	@ManyToOne
 	private int owner;
 
@@ -281,13 +410,61 @@ class BasicTableForeign {
 }
 
 @Entity
-class BasicTableForeignMismatch {
+class BasicTableOneToOneForeign {
 	@Id(serial = true)
 	private int id;
 
-	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTablePrimary")
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToOnePrimary")
+	@OneToOne
+	private int owner;
+
+	private String name;
+}
+
+@Entity
+class BasicTableManyToManyForeign {
+	@Id(serial = true)
+	private int id;
+
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableManyToManyPrimary")
+	@ManyToMany
+	private int owner;
+
+	private String name;
+}
+
+@Entity
+class BasicTableManyToOneForeignInvalid {
+	@Id(serial = true)
+	private int id;
+
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToOnePrimary")
 	@ManyToOne
-	private long owner;
+	private int owner;
+
+	private String name;
+}
+
+@Entity
+class BasicTableOneToOneForeignInvalid {
+	@Id(serial = true)
+	private int id;
+
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToManyPrimary")
+	@OneToOne
+	private int owner;
+
+	private String name;
+}
+
+@Entity
+class BasicTableManyToManyForeignInvalid {
+	@Id(serial = true)
+	private int id;
+
+	@JoinColumn(mappedByColumn = "id", mappedByTable = "BasicTableOneToOnePrimary")
+	@ManyToMany
+	private int owner;
 
 	private String name;
 }
