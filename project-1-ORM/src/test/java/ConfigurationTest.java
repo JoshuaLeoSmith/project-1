@@ -1,3 +1,9 @@
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,12 +25,6 @@ import com.revature.annotations.OneToOne;
 import com.revature.dao.TableDao;
 import com.revature.util.Configuration;
 import com.revature.util.MetaModel;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 
 public class ConfigurationTest {
 	private Configuration defaultConfig;
@@ -60,7 +60,9 @@ public class ConfigurationTest {
 		try {
 			Configuration config = new Configuration("./src/test/resources/");
 		} catch (FileNotFoundException e) {
-			throw new AssertionError("unable to open the default file");
+			// Any reason this was Assertion Error?
+			//			throw new AssertionError("unable to open the default file");
+			throw new IllegalStateException("unable to open the default file");
 		}
 	}
 
@@ -125,7 +127,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableManyToOneForeign.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test(expected=IllegalStateException.class)
 	public void testSetTablesDisconnectedManyToOneTables() {
 		try {
@@ -141,7 +143,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableManyToOneForeignInvalid.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test
 	public void testSetTablesConnectedOneToOneTables() {
 		try {
@@ -157,7 +159,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableOneToOneForeign.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test(expected=IllegalStateException.class)
 	public void testSetTablesDisconnectedOneToOneTables() {
 		try {
@@ -173,7 +175,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableOneToOneForeignInvalid.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test
 	public void testSetTablesConnectedManyToManyTables() {
 		try {
@@ -189,7 +191,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableManyToManyForeign.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test(expected=IllegalStateException.class)
 	public void testSetTablesDisconnectedManyToManyTables() {
 		try {
@@ -205,7 +207,7 @@ public class ConfigurationTest {
 		defaultConfig.addTable(BasicTableManyToManyForeignInvalid.class);
 		defaultConfig.validate();
 	}
-	
+
 	@Test
 	public void testSetTablesConnectedRelationMismatchTables() {
 		try {
@@ -298,7 +300,7 @@ public class ConfigurationTest {
 
 		assertEquals(meta1, defaultConfig.getModelByName("basic"));
 	}
-	
+
 	@Test
 	public void testGetModelByClassInvalid() {
 		MetaModel<Class<?>> meta1 = MetaModel.of(BasicTable.class);
@@ -342,7 +344,7 @@ public class ConfigurationTest {
 
 		assertEquals(meta1, defaultConfig.getModelByName("BasicTableManyToOneForeign"));
 	}
-	
+
 	@Test
 	public void testGetFullUrl() {
 		assertEquals(defaultConfig.getFullUrl(), "jdbc:postgresql://team-5-ent.cvtq9j4axrge.us-east-1.rds.amazonaws.com:5432/postgres?currentSchema=test0");
