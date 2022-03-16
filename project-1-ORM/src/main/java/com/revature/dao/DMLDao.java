@@ -252,13 +252,14 @@ public class DMLDao {
 	}
 	
 	
-	public Object findByPk(Class<?> clazz, int id, String pkName) {
+	public Object findByPk(Class<?> clazz, int id, String tableName, String pkName) {
 		
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			
-			String sql = "SELECT * FROM " + schema + "." + clazz.getAnnotation(Entity.class).tableName() + " WHERE " + pkName + " = " + id;
+			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + "\"" + pkName + "\" = " + id;
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
@@ -292,7 +293,9 @@ public class DMLDao {
 							values[count-1] = rs.getBoolean(count);
 						}else if (t.equals("char")) {
 							values[count-1] = rs.getString(count);
-						}else {
+						}else if(t.equals("java.time.LocalDate")) {
+							values[count-1] = rs.getDate(count).toLocalDate();
+						}else{
 							values[count-1] = rs.getObject(count);
 						}
 						
@@ -316,35 +319,31 @@ public class DMLDao {
 		return null;
 	}
 	
-	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, boolean save) {
+	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, int id, boolean save) {
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
+			pkName =  "\"" + pkName + "\"";
+	
+			String setVals = "";
+			for(String s : colNameToValue.keySet()) {
+				setVals = setVals + "\"" + s + "\"='" + colNameToValue.get(s) + "',";
+			}
+			
+			setVals = setVals.substring(0, setVals.length()-1);
 			
 			
-			//String setVals = "";
-			//for(String s : colNameToValue.keySet()) {
-			//	setVals = setVals + 
-		//	}
+			String sql = "UPDATE " + schema + "." + tableName + " SET " + setVals + " WHERE " + pkName + "=" + id;
 			
-			
-			
-			String sql = "UPDATE " + schema + "." + tableName + " SET ";
-			
-			
+			System.out.println();
+			System.out.println(sql);
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 		
+			stmt.execute();
 			
-			ResultSet rs;
-			
-			int id = -1;
-			if((rs = stmt.executeQuery()) != null) {
-				rs.next();
-				
-				id = rs.getInt(pkName);
-			}
 			
 			if(save) {
 				sql = "COMMIT";
