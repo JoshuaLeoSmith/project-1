@@ -113,6 +113,7 @@ public class TableDao {
 		if (name.equals("")) {
 			name = allFieldsInTable.getSimpleClassName();
 		}
+		System.out.println("\n\n\n\n\nCreating " + name);
 
 		String sql = "";
 		/*
@@ -185,12 +186,18 @@ public class TableDao {
 		createStatment.execute();
 
 		if (TableDao.managment.toLowerCase().equals("create")) {
-			String dropsql = "drop table if exists " + TableDao.schema + "." + name + " cascade";
-			PreparedStatement dropStatment = TableDao.conn.prepareStatement(dropsql);
-			// System.out.println("\n"+dropStatment.toString());//Uncomment if throwing
-			// errors to see what is being queried
-			dropStatment.execute();
+			// boolean drop = false;
+			/*
+			 * for (ForeignKeyField fk : allFieldsInTable.getForeignKeys()) { if
+			 * (fk.getRelation() == Relation.OneToMany) { truncate(allFieldsInTable); drop =
+			 * true; } }
+			 */
+			// if (!drop) {
+			drop(allFieldsInTable);
+			// }
+
 		}
+		System.out.println(sql);
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		// System.out.println("\n"+myStatment.toString());//Uncomment if throwing errors
 		// to see what is being queried
@@ -442,7 +449,7 @@ public class TableDao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		String sql = "truncate table \"" + name + "\"";
+		String sql = "truncate table \"" + TableDao.schema + "\".\"" + name + "\" cascade";
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		myStatment.execute();
 	}
@@ -452,7 +459,8 @@ public class TableDao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		String sql = "drop table \"" + name + "\"";
+		String sql = "drop table if exists \"" + TableDao.schema + "\".\"" + name + "\" cascade";
+		System.out.println(sql);
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		myStatment.execute();
 	}
@@ -510,7 +518,7 @@ public class TableDao {
 			if (keyName.equals("")) {
 				keyName = key.getName();
 			}
-			if (keys.contains(key.getMappedByColumn())) {
+			if (keys.contains(keyName)) {
 				// System.out.println("Skipping: " + keyName);
 				continue;
 			} else {
@@ -589,12 +597,34 @@ public class TableDao {
 				}
 
 				keys.add(key.getMappedByColumn());
-			} else {
-				String ForeignSQL = "alter table \"" + TableDao.schema + "\".\"" + name + "\" add foreign key (\""
-						+ keyName + "\") references \"" + key.getMappedByTable() + "\" (\"" + key.getMappedByColumn()
-						+ "\");";
+			} else if (key.getRelation() == Relation.ManyToOne) {
+
+				System.out.println("\n\n\n\n\n\n");
+
+				Class<?> instance;
+				try {
+					// System.out.println("com.revature." + key.getMappedByTable());
+					instance = Class.forName("com.revature." + key.getMappedByTable());
+				} catch (ClassNotFoundException e) {
+					throw new ClassNotFoundException("The table defined in the foreign key does not exist");
+				}
+				insert(MetaModel.of(instance));
+				PrimaryKeyField otherKey = MetaModel.of(instance).getPrimaryKey();
+				String otherPKeyName = otherKey.getColumnName();
+				if (otherPKeyName.equals("")) {
+					otherPKeyName = otherKey.getName();
+				}
+
+				String ForeignAddSQL = "alter table \"" + TableDao.schema + "\".\"" + name + "\" add column \""
+						+ keyName + "\" " + getSQLType(otherKey) + " not null";
+				String ForeignSQL = "alter table \"" + TableDao.schema + "\".\"" + name + "\" add constraint \"fk_"
+						+ keyName + "\" foreign key (\"" + keyName + "\") references \"" + TableDao.schema + "\".\""
+						+ key.getMappedByTable() + "\" (\"" + key.getMappedByColumn() + "\")";
+				PreparedStatement foreignAddStatment = TableDao.conn.prepareStatement(ForeignAddSQL);
 				PreparedStatement foreignStatment = TableDao.conn.prepareStatement(ForeignSQL);
-				// System.out.println(foreignStatment.toString());
+				System.out.println(ForeignAddSQL);
+				System.out.println(ForeignSQL);
+				foreignAddStatment.execute();
 				foreignStatment.execute();
 			}
 
