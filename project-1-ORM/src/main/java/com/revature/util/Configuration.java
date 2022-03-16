@@ -199,13 +199,6 @@ public class Configuration {
 												+ column2.getName() + " = " + column2.getRelation().toString());
 							}
 							break;
-						case OneToMany:
-							if (column2.getRelation() != Relation.ManyToOne) {
-								throw new IllegalStateException(
-										"Miss-matching mappings, " + column.getName() + " = OneToMany, "
-												+ column2.getName() + " = " + column2.getRelation().toString());
-							}
-							break;
 						case ManyToMany:
 							if (column2.getRelation() != Relation.ManyToMany) {
 								throw new IllegalStateException(
@@ -213,8 +206,9 @@ public class Configuration {
 												+ column2.getName() + " = " + column2.getRelation().toString());
 							}
 							break;
+						case OneToMany:
 						default:
-
+							throw new IllegalStateException("Invalid relation " + column.getRelation() + " set to foreign key " + column.getName());
 						}
 					} catch (RuntimeException e) {
 						throw new IllegalStateException("Unable to find field " + column.getMappedByColumn()
@@ -283,9 +277,6 @@ public class Configuration {
 	public MetaModel<Class<?>> getModelByName(String name) {
 		Optional<MetaModel<Class<?>>> meta = metaModels.stream()
 				.filter(m -> {
-					System.out.println(name);
-					System.out.println("\t" + m.getSimpleClassName());
-					System.out.println("\t" + m.getTableName());
 					return m.getSimpleClassName().equals(name) || m.getTableName().equals(name);
 				}).findFirst();
 

@@ -572,7 +572,7 @@ class DummyProjectTable {
 	@Id
 	private int id;
 
-	@OneToMany
+	@ManyToOne
 	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
 	private int user_id;
 }
