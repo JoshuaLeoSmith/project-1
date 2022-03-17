@@ -40,12 +40,15 @@ public class DMLDao {
 			
 			for(String s : colNameToValue.keySet()) {
 				
-				String value = String.valueOf(colNameToValue.get(s));
-				if(value.equals("null")) {
-					value = "DBNull.value";
-					continue;
+				Object value = colNameToValue.get(s);
+				if(String.valueOf(value).equals("null")) {
+					value = " ";
+					
+				}else if(colNameToValue.get(s).getClass()==Character.class) {
+					if(String.valueOf(value).charAt(0) == '\0') {
+						value = (char)32;
+					}
 				}
-				
 				colNames = colNames + "\"" + s + "\",";
 				values = values + "'" + value + "',";
 				
@@ -87,8 +90,8 @@ public class DMLDao {
 		
 		
 		try{
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\""+ ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + "\"" + pkName + "\"=" + id;
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
@@ -113,8 +116,8 @@ public class DMLDao {
 		
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + where + " RETURNING " + "\"" + pkName + "\"";
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
@@ -147,8 +150,8 @@ public class DMLDao {
 		ArrayList<Object> found = new ArrayList<Object>();
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + where;
 			//System.out.println(sql);
 			
@@ -183,9 +186,7 @@ public class DMLDao {
 								values[count-1] = rs.getString(count);
 							}else if(t.equals("double")) {
 								values[count-1] = rs.getDouble(count);
-							}else if (t.equals("float")) { 
-								values[count-1] = rs.getDouble(count);
-							}else if(t.equals("byte")) {
+							} else if(t.equals("byte")) {
 								values[count-1] = rs.getByte(count);
 							} else if(t.equals("short")) {
 								values[count-1] = rs.getShort(count);
@@ -193,6 +194,8 @@ public class DMLDao {
 								values[count-1] = rs.getLong(count);
 							}else if (t.equals("boolean")) {
 								values[count-1] = rs.getBoolean(count);
+							}else if (t.equals("float")) {
+								values[count-1] = rs.getFloat(count);
 							}else if (t.equals("char")) {
 								values[count-1] = rs.getString(count).charAt(0);
 							} else if(t.equals("java.time.LocalDate")) {
@@ -212,6 +215,7 @@ public class DMLDao {
 						}
 						
 						Object ro = c.newInstance(values);
+			
 						found.add(ro);
 				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
 					logger.error("Exception thrown...");
@@ -330,12 +334,12 @@ public class DMLDao {
 			try{
 				setVals = setVals.substring(0, setVals.length()-5);
 			} catch(StringIndexOutOfBoundsException e) {
-				System.out.println("no");
-				System.exit(0);
+				System.out.println("No results returned");
+				return null;
 			}
 			
 			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + setVals;
-			//System.out.println(sql);
+			System.out.println(sql);
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 			ResultSet rs;
@@ -424,9 +428,18 @@ public class DMLDao {
 	
 			String setVals = "";
 			for(String s : colNameToValue.keySet()) {
-				
-
-				setVals = setVals + "\"" + s + "\"='" + colNameToValue.get(s) + "',";
+				Object val = colNameToValue.get(s);
+				if (String.valueOf(val).equals("null")) {
+					val = " "; 
+				} else if(val.getClass()==Character.class) {
+					if((char)val == '\0') {
+						val = (char)32;
+					}
+		
+					
+					
+				}
+				setVals = setVals + "\"" + s + "\"='" + val + "',";
 				
 			}
 			

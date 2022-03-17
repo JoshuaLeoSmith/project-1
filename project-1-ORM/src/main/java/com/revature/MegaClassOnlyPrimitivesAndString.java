@@ -23,6 +23,7 @@ public class MegaClassOnlyPrimitivesAndString {
 	private char character;
 	
 	
+	
 	public MegaClassOnlyPrimitivesAndString() {
 		super();
 	}
