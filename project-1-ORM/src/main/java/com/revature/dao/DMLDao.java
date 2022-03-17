@@ -24,15 +24,10 @@ public class DMLDao {
 	
 	public DMLDao() {
 		this.conn = ConnectionUtil.getConnection();
-		try {
-			conn.setAutoCommit(true);
-		} catch (SQLException e) {
-			logger.error("SQLException thrown... cannot access the database...");
-			e.printStackTrace();
-		}
+
 	}
 	
-	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, boolean save) {
+	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName) {
 		
 		try{
 			
@@ -64,12 +59,11 @@ public class DMLDao {
 			
 			String sql = "INSERT INTO " + schema + "." + "\"" + tableName + "\" " + colNames + " VALUES " + values + " RETURNING " + "\"" + pkName + "\"";
 			
-			System.out.println(sql);
-			//System.out.println(sql);
+			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 		
-			
+			System.out.println(sql);
 			ResultSet rs;
 			
 			int id = -1;
@@ -79,24 +73,17 @@ public class DMLDao {
 				id = rs.getInt(pkName);
 			}
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully inserted data with id" + id + "... Committed.");
-			}else {
-				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
-			}
+
 			return id;
 		
 		} catch(SQLException e) {
 			e.printStackTrace();
 			
 			return -1;	
-		}
+		} 
 	}
 	
-	public int remove(String tableName, int id, String pkName, boolean save) {
+	public int remove(String tableName, int id, String pkName) {
 		
 		
 		try{
@@ -110,14 +97,7 @@ public class DMLDao {
 			
 			stmt.execute();
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully removed row with id" + id + "... Committed.");
-			} else {
-				logger.info("Successfully removed row with id" + id + "... NOT committed.");
-			}
+
 			return id;
 			
 		} catch(SQLException e) {
@@ -128,7 +108,7 @@ public class DMLDao {
 	}
 	
 	
-	public ArrayList<Integer> remove(String tableName, String where, String pkName, boolean save) {
+	public ArrayList<Integer> remove(String tableName, String where, String pkName) {
 		
 		
 		try{
@@ -152,15 +132,7 @@ public class DMLDao {
 				}
 			}
 			
-			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully removed row(s) from " + tableName + " where " + where + "... Committed");
-			} else {
-				logger.info("Successfully removed row(s) from " + tableName + " where " + where + "... NOT Committed");
-			}
+
 			return removed;
 			
 		} catch(SQLException e) {
@@ -211,7 +183,9 @@ public class DMLDao {
 								values[count-1] = rs.getString(count);
 							}else if(t.equals("double")) {
 								values[count-1] = rs.getDouble(count);
-							} else if(t.equals("byte")) {
+							}else if (t.equals("float")) { 
+								values[count-1] = rs.getDouble(count);
+							}else if(t.equals("byte")) {
 								values[count-1] = rs.getByte(count);
 							} else if(t.equals("short")) {
 								values[count-1] = rs.getShort(count);
@@ -220,9 +194,13 @@ public class DMLDao {
 							}else if (t.equals("boolean")) {
 								values[count-1] = rs.getBoolean(count);
 							}else if (t.equals("char")) {
-								values[count-1] = rs.getString(count);
+								values[count-1] = rs.getString(count).charAt(0);
 							} else if(t.equals("java.time.LocalDate")) {
-								values[count-1] = rs.getDate(count).toLocalDate();
+								try{
+									values[count-1] = rs.getDate(count).toLocalDate();
+								}catch(NullPointerException e) {
+									values[count-1] = null;
+								}
 								//dateToConvert.toInstant()
 							   //   .atZone(ZoneId.systemDefault())
 							   //   .toLocalDate();
@@ -269,7 +247,16 @@ public class DMLDao {
 				rs.next();
 				try {
 					Constructor[] cons = clazz.getConstructors();
-					Constructor c = cons[2];
+					int max = 0;
+					int ind = 0;
+					for(int i =0; i<cons.length; i++) {
+						int paramNumbers = cons[i].getParameterCount();
+						if(paramNumbers > max) {
+							max = paramNumbers;
+							ind = i;
+						}
+					}
+					Constructor c = cons[ind];
 					int parameterCount = c.getParameterCount();	
 					Parameter[] parameters = c.getParameters();
 					Object[] values = new Object[parameterCount];
@@ -291,10 +278,17 @@ public class DMLDao {
 							values[count-1] = rs.getLong(count);
 						}else if (t.equals("boolean")) {
 							values[count-1] = rs.getBoolean(count);
-						}else if (t.equals("char")) {
-							values[count-1] = rs.getString(count);
+						}else if (t.equals("float")) {
+							values[count-1] = rs.getFloat(count);
+						}
+						else if (t.equals("char")) {
+							values[count-1] = rs.getString(count).charAt(0);
 						}else if(t.equals("java.time.LocalDate")) {
-							values[count-1] = rs.getDate(count).toLocalDate();
+							try{
+								values[count-1] = rs.getDate(count).toLocalDate();
+							}catch(NullPointerException e) {
+								values[count-1] = null;
+							}
 						}else{
 							values[count-1] = rs.getObject(count);
 						}
@@ -319,7 +313,109 @@ public class DMLDao {
 		return null;
 	}
 	
-	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, int id, boolean save) {
+	
+	public ArrayList<Object> findBySimilarAttributes(Class<?> clazz, LinkedHashMap<String,Object> colNameToValue, String tableName, String pkName){
+		ArrayList<Object> found = new ArrayList<Object>();
+		try{
+			
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
+			String setVals = "";
+			
+			for(String s : colNameToValue.keySet()) {
+				
+				setVals = setVals + "\"" + s + "\"='" + colNameToValue.get(s) + "' AND ";
+			}
+			
+			try{
+				setVals = setVals.substring(0, setVals.length()-5);
+			} catch(StringIndexOutOfBoundsException e) {
+				System.out.println("no");
+				System.exit(0);
+			}
+			
+			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + setVals;
+			//System.out.println(sql);
+			PreparedStatement stmt = this.conn.prepareStatement(sql);
+			
+			ResultSet rs;
+			
+			if((rs = stmt.executeQuery()) != null) {
+				while(rs.next()) {
+					try {
+						Constructor[] cons = clazz.getConstructors();
+						int max = 0;
+						int ind = 0;
+						for(int i =0; i<cons.length; i++) {
+							int paramNumbers = cons[i].getParameterCount();
+							if(paramNumbers > max) {
+								max = paramNumbers;
+								ind = i;
+							}
+						}
+						Constructor c = cons[ind];
+						int parameterCount = c.getParameterCount();	
+						Parameter[] parameters = c.getParameters();
+						Object[] values = new Object[parameterCount];
+						
+						int count = 1;
+						for(Parameter p : parameters) {
+							String t = p.getParameterizedType().getTypeName();
+							if(t.equals("int")) {
+								values[count-1] = rs.getInt(count);
+							}else if(t.equals("java.lang.String")) {
+								values[count-1] = rs.getString(count);
+							}else if(t.equals("double")) {
+								values[count-1] = rs.getDouble(count);
+							} else if(t.equals("byte")) {
+								values[count-1] = rs.getByte(count);
+							} else if(t.equals("short")) {
+								values[count-1] = rs.getShort(count);
+							}else if (t.equals("long")) {
+								values[count-1] = rs.getLong(count);
+							}else if (t.equals("boolean")) {
+								values[count-1] = rs.getBoolean(count);
+							}else if (t.equals("float")) {
+								values[count-1] = rs.getFloat(count);
+							}else if (t.equals("char")) {
+								values[count-1] = rs.getString(count).charAt(0);
+							} else if(t.equals("java.time.LocalDate")) {
+								try{
+									values[count-1] = rs.getDate(count).toLocalDate();
+								}catch(NullPointerException e) {
+									values[count-1] = null;
+								}
+								//dateToConvert.toInstant()
+							   //   .atZone(ZoneId.systemDefault())
+							   //   .toLocalDate();
+							} else {
+								values[count-1] = rs.getObject(count);
+							} 
+							
+							count++;
+						}
+						
+						Object ro = c.newInstance(values);
+			
+						found.add(ro);
+				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					logger.error("Exception thrown...");
+					e.printStackTrace();
+					return null;
+					}
+				}
+			}	
+		} catch(SQLException e) {
+			logger.error("SQLException thrown... cannot access the database...");
+			e.printStackTrace();
+			return null;
+		}
+		return found;
+		
+		
+	}
+	
+	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, int id) {
 		try{
 			
 			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
@@ -328,7 +424,10 @@ public class DMLDao {
 	
 			String setVals = "";
 			for(String s : colNameToValue.keySet()) {
+				
+
 				setVals = setVals + "\"" + s + "\"='" + colNameToValue.get(s) + "',";
+				
 			}
 			
 			setVals = setVals.substring(0, setVals.length()-1);
@@ -345,14 +444,7 @@ public class DMLDao {
 			stmt.execute();
 			
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully inserted data with id" + id + "... Committed.");
-			}else {
-				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
-			}
+
 			return id;
 		
 		} catch(SQLException e) {

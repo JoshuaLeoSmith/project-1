@@ -10,36 +10,28 @@ public interface IServices {
 	/**
 	 * Inserts object as a row into the table that pertains to the class of the object o.
 	 * @param o The object of a class whose table will be inserted into.
-	 * @param save Committed if true, not committed if false.
 	 * @return The id of the new row inserted.
 	 */
-	public int insert(Object o, boolean save);
+	public int insert(Object o);
 	
 	
 	/**
 	 * Removes row from table pertaining to clazz based on id.
 	 * @param clazz The class whose table is to be removed from.
 	 * @param id The primary key whose row will be removed from the table.
-	 * @param save Committed if true, not committed if false.
 	 * @return The id of the row removed.
 	 */
-	public int removeByPk(Class<?> clazz, int id, boolean save);
+	public int removeByPk(Class<?> clazz, int id);
 	
 	
 	/**
 	 * Removes rows from table given a specific condition that the user manually inputs.
 	 * @param clazz The class whose table is to be removed from.
 	 * @param where The condition written in pseudo-SQL that will determine what rows are removed.
-	 * @param save Committed if true, not committed if false.
 	 * @return A list of id's whose rows were removed.
 	 */
-	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save);
+	public ArrayList<Integer> remove(Class<?> clazz, String where);
 	
-	
-	/**
-	 * Persists the changes to the database.
-	 */
-	public void commit();
 	
 	
 	/**
@@ -115,58 +107,11 @@ public interface IServices {
 	 */
 	int updateRow(Object o);
 
-	
-	/**
-	 * Begins transaction.
-	 */
-	void beginTransaction();
 
-	
 	/**
-	 * Sets the transaction isolation level.
-	 * @param t The transaction isolation level to be changed to.
+	 * Finds rows that have the same data as Object o, excluding null values
+	 * @param o The object that will be the baisis of the search.
+	 * @return A list of objects with similar attributes to Object o;
 	 */
-	void setTransactionIsolation(int t);
-
-	
-	/**
-	 * Gets the current transaction isolation level.
-	 * @return The current transaction isolation level as an integer.
-	 */
-	int getTransactionIsolation();
-
-	
-	/**
-	 * Destroys a savepoint previously defined in the current transaction.
-	 * @param name The name of the savepoint to be released.
-	 * @param savepoint The savepoint to be released.
-	 */
-	void releaseSavepoint(String name, Savepoint savepoint);
-
-	
-	/**
-	 * Creates a savepoint.
-	 * @param name The name of the savepoint created.
-	 * @return The savepoint object pertaining to the name inputted by the user.
-	 */
-	Savepoint setSavepoint(String name);
-
-	
-	/**
-	 * Rolls back to previous commit in a transaction.
-	 */
-	public void rollback();
-	
-	
-	/**
-	 * Rolls back to previous savepoint in a transaction.
-	 * @param savepoint The savepoint object to be rolled back to.
-	 */
-	void rollback(Savepoint savepoint);
-
-	
-	/**
-	 * Ends the current transaction.
-	 */
-	void endTransaction();
+	ArrayList<Object> findBySimilarAttributes(Object o);	
 }
