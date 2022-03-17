@@ -1,5 +1,6 @@
 package com.revature.util;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -12,8 +13,28 @@ import com.revature.service.ServicesImpl;
 
 public class AutoScan {
 	static ServicesImpl Simpl = new ServicesImpl();
-	public static void main(String[] args) {
+
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		getAllClasses();
+		/*
+		 * MetaModel<?> personM = MetaModel.of(person.class);
+		 *
+		 * TableDao TD = new TableDao(); TD.addForeignKeys(personM);
+		 */
+
+		//		Configuration config;
+		//
+		//		try {
+		//			config = new Configuration();
+		//			config.addTables(person.class, Account.class);
+		//
+		//			config.validate();
+		//		} catch (FileNotFoundException e) {
+		//			e.printStackTrace();
+		//			System.exit(1);
+		//		}
+		System.out.println("Done");
+
 	}
 
 	public static void getAllClasses() {
