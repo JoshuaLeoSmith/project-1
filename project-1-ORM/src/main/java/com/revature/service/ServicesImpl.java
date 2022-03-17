@@ -238,7 +238,7 @@ public class ServicesImpl implements IServices {
 					continue;
 				}else if(fieldType.equals(LocalDate.class) && fieldVal.equals(null)){
 					continue;
-				}else if(fieldType.equals(Character.class) && fieldVal.equals(0)){
+				}else if(fieldType.equals(Character.class) && fieldVal.equals('\0')){
 					continue;
 				}
 				
@@ -310,28 +310,29 @@ public class ServicesImpl implements IServices {
 				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
 					continue;
 				}
+				Object value = f.get(o);
 			
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
-						colNameToValue.put(f.getName(), f.get(o));
+						colNameToValue.put(f.getName(), value);
 					}else {
-						colNameToValue.put(keyVal, f.get(o));
+						colNameToValue.put(keyVal, value);
 					}
 				} else if (f.getAnnotation(Id.class) != null) {
-					id = (int)f.get(o);
+					id = (int)value;
 					if(id == 0) {
 						continue;
 					}
 					String keyVal = f.getAnnotation(Id.class).columnName();
 					if (keyVal.equals("")) {
-						colNameToValue.put(f.getName(), f.get(o));
+						colNameToValue.put(f.getName(), value);
 					}else {
-						colNameToValue.put(keyVal, f.get(o));
+						colNameToValue.put(keyVal,value);
 					}
 				} else {
 					String keyVal = f.getName();
-					colNameToValue.put(keyVal, f.get(o));
+					colNameToValue.put(keyVal, value);
 				}
 				
 			} catch (IllegalArgumentException | IllegalAccessException e) {

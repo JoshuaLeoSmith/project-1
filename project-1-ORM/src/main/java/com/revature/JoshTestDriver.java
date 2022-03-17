@@ -19,14 +19,33 @@ public class JoshTestDriver {
 //		}
 		Random r = new Random();
 		MegaClassOnlyPrimitivesAndString tmp = new MegaClassOnlyPrimitivesAndString();
+		
 		//tmp.setB((byte)45);
 		//tmp.setCharacter((char)(3+ 'a'));
-		//System.out.println(Simpl.findBySimilarAttributes(tmp)); --WORKING FOR NO NULLS
+				
+		//Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class,4); //-- WORKING FOR NO NULLS
+		//Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "\"id\" > 90"); //-- WORKING FOR NO NULLS
 		
-		//Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class,4); -- WORKING FOR NO NULLS
-		//Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "\"id\" > 90"); -- WORKING FOR NO NULLS
+		//System.out.println(Simpl.find(MegaClassOnlyPrimitivesAndString.class, "id < 50")); //--WORKING FOR NO NULLS
 		
-		//System.out.println(Simpl.find(MegaClassOnlyPrimitivesAndString.class, "id < 50")); --WORKING FOR NO NULLS
+		//System.out.println(Simpl.findByPk(MegaClassOnlyPrimitivesAndString.class, 40));// -- WORKING FOR NO NULLS
+		//System.out.println(Simpl.findBySimilarAttributes(tmp)); //--WORKING FOR NO NULLS
+		
+		//tmp.setId(87);
+		//Simpl.updateRow(tmp); //---WORKING WITH NULLS EXCEPT ID CANT BE NULL
+		
+		//Simpl.insert(new MegaClassOnlyPrimitivesAndString()); //-- WORKING WITH ALL NULLS
+		
+		//System.out.println(Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "id > 100")); // WORKING WITH ALL NULLS
+		
+		//System.out.println(Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class, 105));// WORKING WITH ALL NULLS
+		
+		//System.out.println(Simpl.findByPk(MegaClassOnlyPrimitivesAndString.class, 87)); //WORKING WITH ALL NULLS
+		
+		//tmp.setB((byte)45);
+		//tmp.setCharacter('l');
+		//System.out.println(Simpl.findBySimilarAttributes(tmp)); //WORKING WITH NULLS
+
 		
 	}
 

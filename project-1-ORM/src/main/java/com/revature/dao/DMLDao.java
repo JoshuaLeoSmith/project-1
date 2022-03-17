@@ -40,12 +40,15 @@ public class DMLDao {
 			
 			for(String s : colNameToValue.keySet()) {
 				
-				String value = String.valueOf(colNameToValue.get(s));
-				if(value.equals("null")) {
-					value = "DBNull.value";
-					continue;
+				Object value = colNameToValue.get(s);
+				if(String.valueOf(value).equals("null")) {
+					value = " ";
+					
+				}else if(colNameToValue.get(s).getClass()==Character.class) {
+					if(String.valueOf(value).charAt(0) == '\0') {
+						value = (char)32;
+					}
 				}
-				
 				colNames = colNames + "\"" + s + "\",";
 				values = values + "'" + value + "',";
 				
@@ -331,12 +334,12 @@ public class DMLDao {
 			try{
 				setVals = setVals.substring(0, setVals.length()-5);
 			} catch(StringIndexOutOfBoundsException e) {
-				System.out.println("no");
-				System.exit(0);
+				System.out.println("No results returned");
+				return null;
 			}
 			
 			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + setVals;
-			//System.out.println(sql);
+			System.out.println(sql);
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 			ResultSet rs;
@@ -425,9 +428,18 @@ public class DMLDao {
 	
 			String setVals = "";
 			for(String s : colNameToValue.keySet()) {
-				
-
-				setVals = setVals + "\"" + s + "\"='" + colNameToValue.get(s) + "',";
+				Object val = colNameToValue.get(s);
+				if (String.valueOf(val).equals("null")) {
+					val = " "; 
+				} else if(val.getClass()==Character.class) {
+					if((char)val == '\0') {
+						val = (char)32;
+					}
+		
+					
+					
+				}
+				setVals = setVals + "\"" + s + "\"='" + val + "',";
 				
 			}
 			
