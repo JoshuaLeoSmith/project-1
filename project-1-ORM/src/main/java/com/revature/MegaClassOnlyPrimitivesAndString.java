@@ -1,5 +1,4 @@
 package com.revature;
-
 import java.io.Serial;
 import java.util.Objects;
 
