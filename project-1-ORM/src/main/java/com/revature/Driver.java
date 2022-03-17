@@ -44,7 +44,7 @@ public class Driver {
 //
 //		Account SuperAccount = new Account(superMan, 1200000);
 //
-		Simpl.insert(batman, true);
+		Simpl.insert(batman);
 //		Simpl.insert(superMan, true);
 //
 //		
