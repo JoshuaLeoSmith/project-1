@@ -3,11 +3,11 @@ package com.revature.dao;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.revature.util.ConnectionUtil;
+import com.revature.exceptions.TransactionException;
 
 public class TransactionDao {
 	private static Connection conn = ConnectionUtil.getConnection();
@@ -16,9 +16,10 @@ public class TransactionDao {
 	public void begin() {
 		try {
 			conn.setAutoCommit(false);
+			conn.setTransactionIsolation(conn.TRANSACTION_READ_COMMITTED);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to start transaction");
+			throw new TransactionException("Unable to start the transaction");
 		}
 	}
 	
@@ -27,16 +28,16 @@ public class TransactionDao {
 			conn.setAutoCommit(true);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to end transaction");
+			throw new TransactionException("Unable to end transaction");
 		}
 	}
 
-	public void rollback() throws RuntimeException {
+	public void rollback() {
 		try {
 			conn.rollback();
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to rollback the transaction");
+			throw new TransactionException("Unable to rollback the transaction");
 		}
 	}
 	
@@ -45,7 +46,7 @@ public class TransactionDao {
 			conn.rollback(savepoint);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to rollback the transaction to given savepoint");
+			throw new TransactionException("Unable to rollback the transaction to given savepoint");
 		}
 	}
 	
@@ -54,7 +55,7 @@ public class TransactionDao {
 			return conn.setSavepoint(name);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to create savepoint \"" + name + "\"");
+			throw new TransactionException("Unable to create savepoint \"" + name + "\"");
 		}
 	}
 	
@@ -63,7 +64,7 @@ public class TransactionDao {
 			conn.releaseSavepoint(savepoint);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to destroy savepoint \"" + name + "\"");
+			throw new TransactionException("Unable to destroy savepoint \"" + name + "\"");
 		}
 	}
 	
@@ -72,7 +73,7 @@ public class TransactionDao {
 			conn.commit();
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to commit the transaction");
+			throw new TransactionException("Unable to commit the transaction");
 		}
 	}
 	
@@ -81,7 +82,7 @@ public class TransactionDao {
 			return conn.getTransactionIsolation();
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to get the transaction level of the current transaction");
+			throw new TransactionException("Unable to get the transaction level of the current transaction");
 		}
 	}
 	
@@ -90,7 +91,7 @@ public class TransactionDao {
 			conn.setTransactionIsolation(transactionIsolation);
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException("Unable to set the transaction level of the current transaction");
+			throw new TransactionException("Unable to set the transaction level of the current transaction");
 		}
 	}
 }
