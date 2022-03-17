@@ -1,7 +1,6 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -371,6 +370,26 @@ public class MetaModelTest {
 
 		meta.getFieldByName("favorite_color");
 	}
+	
+	@Test
+	public void testGetFieldByNamePrimaryOneToOne() {
+		MetaModel<Class<?>> meta = MetaModel.of(PrimaryOneToOne.class);
+
+		try {
+			meta.getColumns();
+		} catch (RuntimeException e) {
+		}
+		try {
+			meta.getPrimaryKey();
+		} catch (RuntimeException e) {
+		}
+		try {
+			meta.getForeignKeys();
+		} catch (RuntimeException e) {
+		}
+		
+		meta.getFieldByName("account");
+	}
 
 	// getAllFields
 	@Test
@@ -574,7 +593,7 @@ class DummyProjectTable {
 
 	@ManyToOne
 	@JoinColumn(columnName = "user_Id", mappedByColumn = "id", mappedByTable = "dummy_table")
-	private int user_id;
+	private List<DummyTable> user_id;
 }
 
 @Entity(tableName = "test")

@@ -172,20 +172,20 @@ public class Configuration {
 			}
 
 			for (ForeignKeyField column : fkeys) {
-				MetaModel<Class<?>> temp = getModelByName(column.getMappedByTable());
+				MetaModel<Class<?>> meta2 = getModelByName(column.getMappedByTable());
 
-				if (temp != null) {
+				if (meta2 != null) {
 					try {
-						GenericField column2 = temp.getFieldByName(column.getMappedByColumn());
-
-						if (!column.getType().equals(column2.getType())) {
-							throw new IllegalStateException(
-									"Miss-matching types, " + column.getName() + " = " + column.getType() + ", "
-											+ column2.getName() + " = " + column2.getType());
-						}
+						GenericField column2 = meta2.getFieldByName(column.getMappedByColumn());
 						
 						switch (column.getRelation()) {
 						case OneToOne:
+							if (!column.getType().equals(meta2.getTableClass())) {
+								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
+							} else if (!column2.getType().equals(meta.getTableClass())) {
+								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
+							}
+							
 							if (column2.getRelation() != Relation.OneToOne) {
 								throw new IllegalStateException(
 										"Miss-matching mappings, " + column.getName() + " = OneToOne, "
@@ -193,6 +193,16 @@ public class Configuration {
 							}
 							break;
 						case ManyToOne:
+							if (!column.getType().equals(meta2.getTableClass()))
+								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
+							
+							String column2Component = column2.getSubType();
+							if (column2Component == null)
+								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection or an array");
+								
+							if (!column2Component.equals(meta.getSimpleClassName()))
+								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
+							
 							if (column2.getRelation() != Relation.OneToMany) {
 								throw new IllegalStateException(
 										"Miss-matching mappings, " + column.getName() + " = ManyToOne, "
@@ -200,16 +210,33 @@ public class Configuration {
 							}
 							break;
 						case ManyToMany:
-							if (column2.getRelation() != Relation.ManyToMany) {
-								throw new IllegalStateException(
-										"Miss-matching mappings, " + column.getName() + " = ManyToMany, "
-												+ column2.getName() + " = " + column2.getRelation().toString());
-							}
-							break;
+							String columnComponent = column.getSubType();
+							if (columnComponent == null)
+								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " must be a Collection or an array");
+							
+							if (!columnComponent.equals(meta2.getSimpleClassName()))
+								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
+							
+							column2Component = column2.getSubType();
+							if (column2Component == null)
+								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection or an array");
+							
+							if (!column2Component.equals(meta.getSimpleClassName()))
+								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
+						
+						if (column2.getRelation() != Relation.ManyToMany) {
+							throw new IllegalStateException(
+									"Miss-matching mappings, " + column.getName() + " = ManyToOne, "
+											+ column2.getName() + " = " + column2.getRelation().toString());
+						}
+						break;
 						case OneToMany:
 						default:
 							throw new IllegalStateException("Invalid relation " + column.getRelation() + " set to foreign key " + column.getName());
 						}
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+						throw new IllegalStateException(e.getMessage());
 					} catch (RuntimeException e) {
 						throw new IllegalStateException("Unable to find field " + column.getMappedByColumn()
 								+ " in class " + column.getMappedByTable());

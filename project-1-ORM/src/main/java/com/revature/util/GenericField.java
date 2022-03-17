@@ -1,5 +1,6 @@
 package com.revature.util;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,4 +19,5 @@ public interface GenericField {
 	Class<?> getType();
 	String getColumnName();
 	Relation getRelation();
+	String getSubType();
 }
