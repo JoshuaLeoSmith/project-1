@@ -37,7 +37,7 @@ public class ServicesImpl implements IServices {
 
 
 	@Override
-	public int insert(Object o, boolean save) {
+	public int insert(Object o) {
 
 
 		Field[] fields = o.getClass().getDeclaredFields();
@@ -101,15 +101,11 @@ public class ServicesImpl implements IServices {
 		}
 
 
-		return td.insert(colNameToValue, tableName, pkName, true);
-		
+		return td.insert(colNameToValue, tableName, pkName);
 	}
 
-
 	@Override
-	public int removeByPk(Class <?> clazz, int id, boolean save) {
-
-
+	public int removeByPk(Class <?> clazz, int id) {
 
 		MetaModel m = MetaModel.of(clazz);
 
@@ -130,13 +126,11 @@ public class ServicesImpl implements IServices {
 			pkName = m.getPrimaryKey().getName();
 		}
 
-		return td.remove(tableName, id, pkName, save);
-
-
+		return td.remove(tableName, id, pkName);
 	}
 
 	@Override
-	public ArrayList<Integer> remove(Class<?> clazz, String where, boolean save) {
+	public ArrayList<Integer> remove(Class<?> clazz, String where) {
 
 		MetaModel m = MetaModel.of(clazz);
 
@@ -156,7 +150,7 @@ public class ServicesImpl implements IServices {
 			pkName = m.getPrimaryKey().getName();
 		}
 
-		return td.remove(tableName, where, pkName, save);
+		return td.remove(tableName, where, pkName);
 	}
 
 	@Override
@@ -173,10 +167,7 @@ public class ServicesImpl implements IServices {
 			
 		}
 		return td.find(clazz, where, tableName);
-
-
 	}
-
 
 	@Override
 	public Object findByPk(Class<?> clazz, int id) {
@@ -366,16 +357,8 @@ public class ServicesImpl implements IServices {
 			pkName = m.getPrimaryKey().getName();
 		}
 
-		return td.updateRow(colNameToValue, tableName, pkName, id, true);
+		return td.updateRow(colNameToValue, tableName, pkName, id);
 		
-	}
-
-
-
-	@Override
-	public void commit() {
-
-		transDao.commit();	
 	}
 
 
@@ -441,45 +424,5 @@ public class ServicesImpl implements IServices {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	@Override
-	public void beginTransaction() {
-		transDao.begin();
-	}
-	
-	@Override
-	public void endTransaction() {
-		transDao.end();
-	}
-	
-	@Override
-	public void rollback() {
-		transDao.rollback();
-	}
-	
-	@Override
-	public void rollback(Savepoint savepoint) {
-		transDao.rollback(savepoint);
-	}
-	
-	@Override
-	public Savepoint setSavepoint(String name) {
-		return transDao.setSavepoint(name);
-	}
-	
-	@Override
-	public void releaseSavepoint(String name, Savepoint savepoint) {
-		transDao.releaseSavepoint(name, savepoint);
-	}
-	
-	@Override
-	public int getTransactionIsolation() {
-		return transDao.getTransactionIsolation();
-	}
-	
-	@Override
-	public void setTransactionIsolation(int t) {
-		transDao.setTransactionIsolation(t);
 	}
 }
