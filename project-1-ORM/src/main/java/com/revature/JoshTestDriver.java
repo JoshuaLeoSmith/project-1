@@ -1,5 +1,6 @@
 package com.revature;
 
+import java.time.LocalDate;
 import java.util.Random;
 
 import com.revature.service.ServicesImpl;
@@ -8,45 +9,18 @@ public class JoshTestDriver {
 	static ServicesImpl Simpl = new ServicesImpl();
 
 	public static void main(String[] args) {
-		//Simpl.truncate(MegaClassOnlyPrimitivesAndString.class);
-		//		Simpl.create(MegaClassOnlyPrimitivesAndString.class);
-		//
-		//		for (int i=0; i<100; i++) {
-		//			Simpl.insert(generateRandomObjects(), true);
-		//		}
-		Random r = new Random();
-		MegaClassOnlyPrimitivesAndString tmp = new MegaClassOnlyPrimitivesAndString();
 
-		//tmp.setB((byte)45);
-		//tmp.setCharacter((char)(3+ 'a'));
-
-		//Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class,4); //-- WORKING FOR NO NULLS
-		//Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "\"id\" > 90"); //-- WORKING FOR NO NULLS
-
-		//System.out.println(Simpl.find(MegaClassOnlyPrimitivesAndString.class, "id < 50")); //--WORKING FOR NO NULLS
-
-		//System.out.println(Simpl.findByPk(MegaClassOnlyPrimitivesAndString.class, 40));// -- WORKING FOR NO NULLS
-		//System.out.println(Simpl.findBySimilarAttributes(tmp)); //--WORKING FOR NO NULLS
-
-		//tmp.setId(87);
-		//Simpl.updateRow(tmp); //---WORKING WITH NULLS EXCEPT ID CANT BE NULL
-
-		for (int i = 0; i < 100; i++) {
-			Simpl.insert(new MegaClassOnlyPrimitivesAndString()); // -- WORKING WITH ALL NULLS
-		}
-		Simpl.truncate(MegaClassOnlyPrimitivesAndString.class);
-
-		//System.out.println(Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "id > 100")); // WORKING WITH ALL NULLS
-
-		//System.out.println(Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class, 105));// WORKING WITH ALL NULLS
-
-		//System.out.println(Simpl.findByPk(MegaClassOnlyPrimitivesAndString.class, 87)); //WORKING WITH ALL NULLS
-
-		//tmp.setB((byte)45);
-		//tmp.setCharacter('l');
-		//System.out.println(Simpl.findBySimilarAttributes(tmp)); //WORKING WITH NULLS
-
-
+		
+		//Simpl.create(User.class);
+		//Simpl.create(UserAccounts.class);
+		
+		//Simpl.insert(new User("jls", LocalDate.of(2000, 02, 14), null));
+		//Simpl.insert(new UserAccounts(12.44, true, 1));
+		//Simpl.insert(new UserAccounts(21.55, false, 1));
+		
+		System.out.println(Simpl.findByPk(User.class, 1));
+		
+		
 	}
 
 	public static MegaClassOnlyPrimitivesAndString generateRandomObjects() {
