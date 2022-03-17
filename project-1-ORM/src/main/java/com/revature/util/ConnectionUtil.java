@@ -20,6 +20,14 @@ public class ConnectionUtil {
 	private static Connection conn=null;
 	private ConnectionUtil() {}
 
+	/**
+	 * This gets the schema set in the config.properties
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static String getSchema() {
 		try {
 			Properties prop=new Properties();
@@ -35,7 +43,14 @@ public class ConnectionUtil {
 		return "public";
 	}
 
-
+	/**
+	 * This gets the management set in the config.properties
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static String getManagement() {
 		try {
 			Properties prop=new Properties();
@@ -77,18 +92,50 @@ public class ConnectionUtil {
 		}
 	}
 
+	/**
+	 * This changes the max pool size
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static void changeMaxPoolSize(int size) {
 		cpds.setMaxPoolSize(size);
 	}
 
+	/**
+	 * This changes the min pool size
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static void changeMinPoolSize(int size) {
 		cpds.setMinPoolSize(size);
 	}
 
+	/**
+	 * This changes the driver class
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static void changeDriverClass(String driver) throws PropertyVetoException {
 		cpds.setDriverClass(driver);
 	}
 
+	/**
+	 * This gets a connection from a connection pool
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static Connection getConnection() {
 		/*
 		 * try { if ((conn != null) && !conn.isClosed()) { return conn; } } catch
@@ -104,6 +151,14 @@ public class ConnectionUtil {
 		return conn;
 	}
 
+	/**
+	 * This gets only a single connection
+	 *
+	 * <pre>
+	 * </pre>
+	 *
+	 * @author Caleb Kirschbaum
+	 */
 	public static Connection getSingleConnection() {
 		try {
 			if ((conn != null) && !conn.isClosed()) {

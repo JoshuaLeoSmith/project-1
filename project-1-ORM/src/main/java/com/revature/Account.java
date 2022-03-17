@@ -160,7 +160,7 @@ public class Account {
 	}
 	public double getBalance() {
 		double cents=(balance%100)/100.0;
-		double dollars=balance/100;
+		int dollars = balance / 100;
 		double balanceInDollars=(dollars+cents);
 
 		//System.out.println(balance);
