@@ -1,16 +1,13 @@
 package com.revature.dao;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
 import org.apache.log4j.Logger;
 
-import com.revature.util.ConnectionUtil;
 import com.revature.exceptions.TransactionException;
 
-public class TransactionDao {
-	private static Connection conn = ConnectionUtil.getConnection();
+public class TransactionDao implements Dao{
 	private static Logger logger = Logger.getLogger(TransactionDao.class);
 	
 	public void begin() {
