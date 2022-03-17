@@ -87,8 +87,8 @@ public class DMLDao {
 		
 		
 		try{
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\""+ ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + "\"" + pkName + "\"=" + id;
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
@@ -113,8 +113,8 @@ public class DMLDao {
 		
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "DELETE FROM " + schema + "." + tableName + " WHERE " + where + " RETURNING " + "\"" + pkName + "\"";
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
@@ -147,8 +147,8 @@ public class DMLDao {
 		ArrayList<Object> found = new ArrayList<Object>();
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
-			
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
+			tableName = "\"" + tableName + "\"";
 			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + where;
 			//System.out.println(sql);
 			
@@ -183,9 +183,7 @@ public class DMLDao {
 								values[count-1] = rs.getString(count);
 							}else if(t.equals("double")) {
 								values[count-1] = rs.getDouble(count);
-							}else if (t.equals("float")) { 
-								values[count-1] = rs.getDouble(count);
-							}else if(t.equals("byte")) {
+							} else if(t.equals("byte")) {
 								values[count-1] = rs.getByte(count);
 							} else if(t.equals("short")) {
 								values[count-1] = rs.getShort(count);
@@ -193,6 +191,8 @@ public class DMLDao {
 								values[count-1] = rs.getLong(count);
 							}else if (t.equals("boolean")) {
 								values[count-1] = rs.getBoolean(count);
+							}else if (t.equals("float")) {
+								values[count-1] = rs.getFloat(count);
 							}else if (t.equals("char")) {
 								values[count-1] = rs.getString(count).charAt(0);
 							} else if(t.equals("java.time.LocalDate")) {
@@ -212,6 +212,7 @@ public class DMLDao {
 						}
 						
 						Object ro = c.newInstance(values);
+			
 						found.add(ro);
 				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
 					logger.error("Exception thrown...");

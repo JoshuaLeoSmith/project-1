@@ -20,10 +20,13 @@ public class JoshTestDriver {
 		Random r = new Random();
 		MegaClassOnlyPrimitivesAndString tmp = new MegaClassOnlyPrimitivesAndString();
 		//tmp.setB((byte)45);
-		tmp.setCharacter((char)(3+ 'a'));
+		//tmp.setCharacter((char)(3+ 'a'));
+		//System.out.println(Simpl.findBySimilarAttributes(tmp)); --WORKING FOR NO NULLS
 		
-		System.out.println(Simpl.findBySimilarAttributes(tmp));
+		//Simpl.removeByPk(MegaClassOnlyPrimitivesAndString.class,4); -- WORKING FOR NO NULLS
+		//Simpl.remove(MegaClassOnlyPrimitivesAndString.class, "\"id\" > 90"); -- WORKING FOR NO NULLS
 		
+		//System.out.println(Simpl.find(MegaClassOnlyPrimitivesAndString.class, "id < 50")); --WORKING FOR NO NULLS
 		
 	}
 
