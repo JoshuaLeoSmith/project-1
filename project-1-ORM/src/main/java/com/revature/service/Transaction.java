@@ -27,7 +27,11 @@ public class Transaction {
 
 	private Map<String, Savepoint> savepoints;
 	private boolean closed = true;
-
+	
+	/**
+	 * The constructor for creating and starting a new transaction. 
+	 * @throws TransactionException
+	 */
 	public Transaction() throws TransactionException {
 		super();
 		savepoints = new HashMap<>();
@@ -41,6 +45,11 @@ public class Transaction {
 		closed = false;
 	}
 
+	/**
+	 * The constructor for testing purposes only, allow for mocking of transactionDao. 
+	 * @param tdao	the 
+	 * @throws TransactionException
+	 */
 	public Transaction(TransactionDao tdao) throws TransactionException {
 		super();
 		this.tdao = tdao;
