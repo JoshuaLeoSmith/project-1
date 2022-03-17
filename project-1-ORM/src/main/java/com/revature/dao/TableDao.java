@@ -13,6 +13,7 @@ import com.revature.util.ColumnField;
 //import com.revature.inspection.ClassInspector;
 import com.revature.util.ConnectionUtil;
 import com.revature.util.ForeignKeyField;
+import com.revature.util.GenericField;
 import com.revature.util.MetaModel;
 import com.revature.util.PrimaryKeyField;
 
@@ -48,18 +49,18 @@ public class TableDao {
 		String modifications = "";
 		Class<?> type = myField.getType();
 
-		if (type == int.class) {
+		if ((type == int.class) || (type == Integer.class)) {
 			modifications += " int";
 		} // Test against Integer
 		else if ((type == byte.class) || (type == short.class)) {
 			modifications += " smallint";
 		} else if (type == long.class) {
 			modifications += " bigint";
-		} else if ((type == float.class) || (type == double.class)) {
+		} else if ((type == float.class) || (type == double.class) || (type == Double.class)) {
 			modifications += " numeric(" + myField.getPercision() + ", " + myField.getScale() + ")";
 		} else if (type == boolean.class) {
 			modifications += " boolean";
-		} else if (type == char.class) {
+		} else if ((type == char.class) || (type == Character.class)) {
 			modifications += " char(1)";
 		} else if (type == String.class) {
 			modifications += " varchar(" + myField.getLength() + ")";
@@ -67,6 +68,7 @@ public class TableDao {
 				|| (type == java.time.LocalDate.class)) {
 			modifications += " date";
 		} else {
+			System.out.println(myField.getName());
 			throw new IllegalArgumentException("Invalid data type for a Column key");
 		}
 		return modifications;
@@ -542,6 +544,7 @@ public class TableDao {
 		}
 		String sql = "truncate table \"" + TableDao.schema + "\".\"" + name + "\" cascade";
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
+		conn.setAutoCommit(false);
 		Savepoint tryTruncating = conn.setSavepoint("tryTruncating");
 		//		System.out.println(sql);
 		try {
@@ -551,6 +554,7 @@ public class TableDao {
 		} finally {
 			conn.releaseSavepoint(tryTruncating);
 			myStatment.close();
+			conn.setAutoCommit(true);
 		}
 	}
 
@@ -570,6 +574,24 @@ public class TableDao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
+		try {
+			for (ForeignKeyField fk : table.getForeignKeys()) {
+				if (fk.getRelation() == Relation.ManyToMany) {
+					String dropJoinTable = "drop table if exists \"" + TableDao.schema + "\".\"" + name + "_"
+							+ fk.getMappedByTable() + "\" cascade";
+					String dropOtherJoinTable = "drop table if exists \"" + TableDao.schema + "\".\""
+							+ fk.getMappedByTable() + "_" + name + "\" cascade";
+					PreparedStatement dropStatment = TableDao.conn.prepareStatement(dropJoinTable);
+					PreparedStatement dropOtherStatment = TableDao.conn.prepareStatement(dropOtherJoinTable);
+					dropStatment.execute();
+					dropOtherStatment.execute();
+					dropStatment.close();
+					dropOtherStatment.close();
+				}
+			}
+		} catch (Exception e) {
+		}
+
 		String sql = "drop table if exists \"" + TableDao.schema + "\".\"" + name + "\" cascade";
 		//		System.out.println(sql);
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
@@ -590,8 +612,7 @@ public class TableDao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		String sql = "Alter table \"" + TableDao.schema + "\".\"" + oldName + "\" rename to \"" + TableDao.schema
-				+ "\".\"" + name + "\";";
+		String sql = "Alter table \"" + TableDao.schema + "\".\"" + oldName + "\" rename to \"" + name + "\";";
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		myStatment.execute();
 		myStatment.close();
@@ -606,12 +627,21 @@ public class TableDao {
 	 * @author Caleb Kirschbaum
 	 */
 	public void renameColumn(MetaModel<?> table, String oldName, String newName) throws SQLException {
+		boolean exists = false;
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
+		for (GenericField gf : table.getAllFields()) {
+			if (gf.getColumnName().equals(newName) || gf.getName().equals(newName)) {
+				exists = true;
+			}
+		}
+		if (!exists) {
+			throw new RuntimeException("The new name must be already in the table.");
+		}
 		String sql = "Alter table \"" + TableDao.schema + "\".\"" + name + "\" rename column \"" + TableDao.schema
-				+ "\".\"" + oldName + "\" to \"" + TableDao.schema + "\".\"" + newName + "\";";
+				+ "\".\"" + oldName + "\" to \"" + newName + "\";";
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		myStatment.execute();
 		myStatment.close();
@@ -712,10 +742,11 @@ public class TableDao {
 				Savepoint joinSave = TableDao.conn.setSavepoint("JoinSave");
 
 				try {
-					//					System.out.println(createJoinTable);
+					// System.out.println(createJoinTable);
 					PreparedStatement joinStatment = TableDao.conn.prepareStatement(createJoinTable);
 					// System.out.println(joinStatment.toString());
 					joinStatment.execute();
+					// System.out.println(otherJoinTable);
 					PreparedStatement OtherjoinStatment = TableDao.conn.prepareStatement(otherJoinTable);
 					// System.out.println(OtherjoinStatment.toString());
 					OtherjoinStatment.execute();

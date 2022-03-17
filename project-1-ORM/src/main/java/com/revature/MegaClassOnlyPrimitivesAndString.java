@@ -1,5 +1,4 @@
 package com.revature;
-import java.io.Serial;
 import java.util.Objects;
 
 import com.revature.annotations.Column;
@@ -9,8 +8,7 @@ import com.revature.annotations.Id;
 @Entity
 public class MegaClassOnlyPrimitivesAndString {
 
-	@Id
-	@Serial
+	@Id(serial = true)
 	private int id;
 	private String username;
 	private byte b;
@@ -21,15 +19,13 @@ public class MegaClassOnlyPrimitivesAndString {
 	private double doubleNum;
 	private boolean binary;
 	private char character;
-	
-	
-	
+
+
+
 	public MegaClassOnlyPrimitivesAndString() {
-		super();
 	}
 	public MegaClassOnlyPrimitivesAndString(String username, byte b, short shortNum, long longNum, float floatNum,
 			double doubleNum, boolean binary, char character) {
-		super();
 		this.username = username;
 		this.b = b;
 		this.shortNum = shortNum;
@@ -41,7 +37,6 @@ public class MegaClassOnlyPrimitivesAndString {
 	}
 	public MegaClassOnlyPrimitivesAndString(int id, String username, byte b, short shortNum, long longNum,
 			float floatNum, double doubleNum, boolean binary, char character) {
-		super();
 		this.id = id;
 		this.username = username;
 		this.b = b;
@@ -52,7 +47,7 @@ public class MegaClassOnlyPrimitivesAndString {
 		this.binary = binary;
 		this.character = character;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -113,17 +108,17 @@ public class MegaClassOnlyPrimitivesAndString {
 	}
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		MegaClassOnlyPrimitivesAndString other = (MegaClassOnlyPrimitivesAndString) obj;
-		return b == other.b && binary == other.binary && character == other.character
-				&& Double.doubleToLongBits(doubleNum) == Double.doubleToLongBits(other.doubleNum)
-				&& Float.floatToIntBits(floatNum) == Float.floatToIntBits(other.floatNum) && id == other.id
-				&& longNum == other.longNum && shortNum == other.shortNum && Objects.equals(username, other.username);
+		return (b == other.b) && (binary == other.binary) && (character == other.character)
+				&& (Double.doubleToLongBits(doubleNum) == Double.doubleToLongBits(other.doubleNum))
+				&& (Float.floatToIntBits(floatNum) == Float.floatToIntBits(other.floatNum)) && (id == other.id)
+				&& (longNum == other.longNum) && (shortNum == other.shortNum) && Objects.equals(username, other.username);
 	}
 	@Override
 	public String toString() {
@@ -131,9 +126,9 @@ public class MegaClassOnlyPrimitivesAndString {
 				+ shortNum + ", longNum=" + longNum + ", floatNum=" + floatNum + ", doubleNum=" + doubleNum
 				+ ", binary=" + binary + ", character=" + character + "]";
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 }

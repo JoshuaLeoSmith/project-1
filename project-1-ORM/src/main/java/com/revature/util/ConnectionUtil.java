@@ -32,7 +32,8 @@ public class ConnectionUtil {
 		try {
 			Properties prop=new Properties();
 			prop.load(new FileReader( "src/main/resources/config.properties"));
-			return prop.getProperty("schema");
+			String schema = prop.getProperty("schema");
+			return (schema != null) ? schema : "public";
 		} catch (FileNotFoundException e) {
 			logBot.error("No file exists for the properties");
 			e.printStackTrace();
@@ -55,7 +56,7 @@ public class ConnectionUtil {
 		try {
 			Properties prop=new Properties();
 			prop.load(new FileReader( "src/main/resources/config.properties"));
-			return prop.getProperty("SchemaManagement");
+			return prop.getProperty("SchemaManagement") != null ? prop.getProperty("SchemaManagement") : "update";
 		} catch (FileNotFoundException e) {
 			logBot.error("No file exists for the properties");
 			e.printStackTrace();
@@ -63,7 +64,7 @@ public class ConnectionUtil {
 			logBot.error("Can't read from the properties file");
 			e.printStackTrace();
 		}
-		return "create";
+		return "update";
 	}
 
 	static {

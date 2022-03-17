@@ -1,6 +1,5 @@
 package com.revature;
 
-import java.io.Serial;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -9,9 +8,8 @@ import com.revature.annotations.Id;
 
 @Entity
 public class MegaClass {
-	
-	@Id
-	@Serial
+
+	@Id(serial = true)
 	private int id;
 	private String username;
 	private byte b;
@@ -25,7 +23,7 @@ public class MegaClass {
 	private Double wrapperDouble;
 	private LocalDate date;
 	private Character characterWrapper;
-	
+
 	public int getId() {
 		return id;
 	}
@@ -111,18 +109,18 @@ public class MegaClass {
 	}
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		MegaClass other = (MegaClass) obj;
-		return b == other.b && binary == other.binary && character == other.character
+		return (b == other.b) && (binary == other.binary) && (character == other.character)
 				&& Objects.equals(characterWrapper, other.characterWrapper) && Objects.equals(date, other.date)
-				&& Double.doubleToLongBits(doubleNum) == Double.doubleToLongBits(other.doubleNum)
-				&& Float.floatToIntBits(floatNum) == Float.floatToIntBits(other.floatNum) && id == other.id
-				&& longNum == other.longNum && shortNum == other.shortNum && Objects.equals(username, other.username)
+				&& (Double.doubleToLongBits(doubleNum) == Double.doubleToLongBits(other.doubleNum))
+				&& (Float.floatToIntBits(floatNum) == Float.floatToIntBits(other.floatNum)) && (id == other.id)
+				&& (longNum == other.longNum) && (shortNum == other.shortNum) && Objects.equals(username, other.username)
 				&& Objects.equals(wrapperDouble, other.wrapperDouble) && Objects.equals(wrapperInt, other.wrapperInt);
 	}
 	@Override
@@ -132,8 +130,8 @@ public class MegaClass {
 				+ ", character=" + character + ", wrapperInt=" + wrapperInt + ", wrapperDouble=" + wrapperDouble
 				+ ", date=" + date + ", characterWrapper=" + characterWrapper + "]";
 	}
-	
-	
-	
-	
+
+
+
+
 }
