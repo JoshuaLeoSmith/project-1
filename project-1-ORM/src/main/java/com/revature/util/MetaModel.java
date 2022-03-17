@@ -134,6 +134,10 @@ public class MetaModel<T> {
 	public String getTableName() {
 		return clazz.getAnnotation(Entity.class).tableName();
 	}
+	
+	public Class<?> getTableClass() {
+		return clazz;
+	}
 
 	// to use this function, you must first call all of the get methods of MetaModel
 	// for each instance before calling this function so that all of the field have

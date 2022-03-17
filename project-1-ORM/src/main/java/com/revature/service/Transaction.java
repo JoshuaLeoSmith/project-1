@@ -27,10 +27,16 @@ public class Transaction {
 
 	private Map<String, Savepoint> savepoints;
 	private boolean closed = true;
-	
+
 	/**
-	 * The constructor for creating and starting a new transaction. 
+	 * The constructor for creating a new transaction. Starts a transaction on the
+	 * current connection by calling TransactionDao.begin().
+	 * 
 	 * @throws TransactionException
+	 * @throws TransactionException 
+	 * 		if an SQLException is thrown on the TransactionDao level, a
+	 * 		TransactionException is thrown
+	 * @see TransactionDao
 	 */
 	public Transaction() throws TransactionException {
 		super();
@@ -46,9 +52,15 @@ public class Transaction {
 	}
 
 	/**
-	 * The constructor for testing purposes only, allow for mocking of transactionDao. 
-	 * @param tdao	the 
-	 * @throws TransactionException
+	 * The constructor for testing purposes only, allow for mocking of
+	 * TransactionDao. Other than that, creates and starts a transaction in the same
+	 * way as the no args constructor.
+	 * 
+	 * @param tdao the TransactionDao to use in-place for the default TransactionDao
+	 * @throws TransactionException 
+	 * 		if an SQLException is thrown on the TransactionDao level, a
+	 * 		TransactionException is thrown
+	 * @see TransactionDao
 	 */
 	public Transaction(TransactionDao tdao) throws TransactionException {
 		super();
@@ -60,6 +72,11 @@ public class Transaction {
 		closed = false;
 	}
 
+	/**
+	 * Gets the current state of the 
+	 * 
+	 * @return	if the current transaction is closed
+	 */
 	public boolean isClosed() {
 		return closed;
 	}
@@ -77,7 +94,7 @@ public class Transaction {
 			logger.error("Transaction is closed, cannot execute getTransactionIsolation()");
 			throw new TransactionClosedException("Unable to get a transaction isolation level on a closed transaction");
 		}
-		
+
 		return tdao.getTransactionIsolation();
 	}
 
@@ -86,7 +103,7 @@ public class Transaction {
 			logger.error("Transaction is closed, cannot execute setTransactionIsolation()");
 			throw new TransactionClosedException("Unable to get a transaction isolation level on a closed transaction");
 		}
-		
+
 		tdao.setTransactionIsolation(transactionIsolation);
 	}
 

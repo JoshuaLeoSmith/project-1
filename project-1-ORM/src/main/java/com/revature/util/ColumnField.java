@@ -1,6 +1,8 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -159,5 +161,22 @@ public class ColumnField implements GenericField {
 	@Override
 	public Relation getRelation() {
 		return relation;
+	}
+	
+	@Override
+	public String getSubType() {
+		Type type = field.getGenericType();
+		
+		if (type instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType) type;
+			
+			try {
+				return pt.getActualTypeArguments()[0].getTypeName();
+			} catch (IndexOutOfBoundsException e) {
+				return null;
+			}
+		}
+		
+		return null;
 	}
 }
