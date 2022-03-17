@@ -186,15 +186,8 @@ public class TableDao {
 		createStatment.execute();
 
 		if (TableDao.managment.toLowerCase().equals("create")) {
-			// boolean drop = false;
-			/*
-			 * for (ForeignKeyField fk : allFieldsInTable.getForeignKeys()) { if
-			 * (fk.getRelation() == Relation.OneToMany) { truncate(allFieldsInTable); drop =
-			 * true; } }
-			 */
-			// if (!drop) {
+
 			drop(allFieldsInTable);
-			// }
 
 		}
 		System.out.println(sql);
@@ -207,7 +200,7 @@ public class TableDao {
 		addForeignKeys(allFieldsInTable);
 	}
 
-	@SuppressWarnings("resource")
+
 	public void alter(MetaModel<?> allFieldsInTable)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
@@ -229,10 +222,11 @@ public class TableDao {
 		}
 		List<String> newColumns = new ArrayList<>();
 		PField = allFieldsInTable.getPrimaryKey();
-		String PfieldName = "\"" + PField.getColumnName() + "\"";// Correct the naming convention
+		String PfieldName = PField.getColumnName();// Correct the naming convention
 		if (PField.getColumnName().equals("")) {
 			PfieldName = PField.getName();// Correct the naming convention
 		}
+
 
 		newColumns.add(PfieldName);
 		for (ColumnField myField : allFieldsInTable.getColumns()) {
@@ -262,8 +256,18 @@ public class TableDao {
 		badColumns.removeAll(newColumns);
 		// System.out.println("Bad columns" + badColumns);
 
+		for (String columnName : badColumns) {
+			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\" DROP COLUMN if exists \"" + columnName
+					+ "\" cascade;";
+			myStatment = TableDao.conn.prepareStatement(sql);
+			myStatment.execute();
+		}
+
 		fieldName = PfieldName;
 		sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\"";
+		System.out.println("Current Columns: " + currentColumns);
+		System.out.println("" + fieldName);
+		System.out.println("Current cointains: "+currentColumns.contains(fieldName));
 		if (!currentColumns.contains(fieldName)) {
 			sql += " add";
 			sql += " column \"" + fieldName + "\"";
@@ -283,6 +287,8 @@ public class TableDao {
 			}
 			sql += " primary key;";
 			myStatment = TableDao.conn.prepareStatement(sql);
+			System.out.println(sql);
+			myStatment.execute();
 			// System.out.println(myStatment.toString());
 		} else {
 			String alterSqlType = sql + " alter" + " column \"" + fieldName + "\"" + " type "
@@ -329,15 +335,13 @@ public class TableDao {
 				TableDao.conn.releaseSavepoint(TrySqlUnique);
 			}
 			myStatment = TableDao.conn.prepareStatement(SQLDropSerial);
-		}
-		myStatment.execute();
-
-		for (String columnName : badColumns) {
-			sql = "ALTER TABLE \"" + TableDao.schema + "\".\"" + name + "\" DROP COLUMN if exists \"" + columnName
-					+ "\" cascade;";
-			myStatment = TableDao.conn.prepareStatement(sql);
 			myStatment.execute();
+			int x = 0;
 		}
+
+
+
+
 
 		List<String> columnsToAdd = new ArrayList<>(newColumns);
 		columnsToAdd.removeAll(currentColumns);
@@ -451,7 +455,15 @@ public class TableDao {
 		}
 		String sql = "truncate table \"" + TableDao.schema + "\".\"" + name + "\" cascade";
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
-		myStatment.execute();
+		Savepoint tryTruncating = conn.setSavepoint("tryTruncating");
+		System.out.println(sql);
+		try {
+			myStatment.execute();
+		} catch (SQLException e) {
+			conn.rollback(tryTruncating);
+		} finally {
+			conn.releaseSavepoint(tryTruncating);
+		}
 	}
 
 	public void drop(MetaModel<?> table) throws SQLException {
@@ -573,6 +585,7 @@ public class TableDao {
 				Savepoint joinSave = TableDao.conn.setSavepoint("JoinSave");
 
 				try {
+					System.out.println(createJoinTable);
 					PreparedStatement joinStatment = TableDao.conn.prepareStatement(createJoinTable);
 					// System.out.println(joinStatment.toString());
 					joinStatment.execute();

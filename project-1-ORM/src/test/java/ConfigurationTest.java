@@ -347,7 +347,9 @@ public class ConfigurationTest {
 
 	@Test
 	public void testGetFullUrl() {
-		assertEquals(defaultConfig.getFullUrl(), "jdbc:postgresql://team-5-ent.cvtq9j4axrge.us-east-1.rds.amazonaws.com:5432/postgres?currentSchema=test0");
+		assertEquals(
+				"jdbc:postgresql://team-5-ent.cvtq9j4axrge.us-east-1.rds.amazonaws.com:5432/postgres?currentSchema=test0",
+				defaultConfig.getFullUrl());
 	}
 }
 

@@ -15,8 +15,9 @@ public class Prison {
 	private int id;
 	private String name;
 	private int StateId;
+
 	@OneToMany
-	@JoinColumn()
+	@JoinColumn(mappedByTable = "Villian", mappedByColumn = "id")
 	private List<Villian> captureCells;
 
 	public Prison() {
