@@ -2,6 +2,7 @@ package com.revature.service;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -37,7 +38,6 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public int insert(Object o, boolean save) {
-
 
 
 		Field[] fields = o.getClass().getDeclaredFields();
@@ -201,7 +201,108 @@ public class ServicesImpl implements IServices {
 		return td.findByPk(clazz, id, tableName, pkName);
 	}
 
+	@Override
+	public ArrayList<Object> findBySimilarAttributes(Object o){
+		MetaModel m = MetaModel.of(o.getClass());
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
+		int id = -1;
+		for(Field f: o.getClass().getDeclaredFields()) {
+			f.setAccessible(true);
+			try {
+			
+				
+				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
+					continue;
+				}
+				Class fieldType = null;
+				try {
+					fieldType = f.get(o).getClass();
+				} catch(NullPointerException e) {
+					continue;
+				}
+				Object fieldVal = f.get(o);
 
+				
+				if(f.get(o) == null) {
+					continue;
+				} else if(fieldType.equals(Integer.class) && ((int)fieldVal) == 0){
+					continue;
+				}else if(fieldType.equals(Short.class) && ((short)fieldVal) == 0){
+					continue;
+				}else if(fieldType.equals(Long.class) && ((long)fieldVal) == 0){
+					continue;
+				}else if(fieldType.equals(Byte.class) && ((byte)fieldVal) == 0){
+					continue;
+				}else if(fieldType.equals(Float.class) && ((float)fieldVal) == 0){
+					continue;
+				}else if(fieldType.equals(Double.class) && ((double)fieldVal) == 0.0){
+					continue;
+				}else if(fieldType.equals(Boolean.class)){
+					continue;
+				} else if(fieldType.equals(String.class) && fieldVal.equals(null)){
+					continue;
+				}else if(fieldType.equals(Integer.class) && fieldVal.equals(null)){
+					continue;
+				}else if(fieldType.equals(Double.class) && fieldVal.equals(null)){
+					continue;
+				}else if(fieldType.equals(LocalDate.class) && fieldVal.equals(null)){
+					continue;
+				}else if(fieldType.equals(Character.class) && fieldVal.equals(0)){
+					continue;
+				}
+				
+				
+				
+				if (f.getAnnotation(Column.class) != null) {
+					String keyVal = f.getAnnotation(Column.class).columnName();
+					if (keyVal.equals("")) {
+						colNameToValue.put(f.getName(), f.get(o));
+					}else {
+						colNameToValue.put(keyVal, f.get(o));
+					}
+				} else if (f.getAnnotation(Id.class) != null) {
+					id = (int)f.get(o);
+					if(id == 0) {
+						continue;
+					}
+					String keyVal = f.getAnnotation(Id.class).columnName();
+					if (keyVal.equals("")) {
+						colNameToValue.put(f.getName(), f.get(o));
+					}else {
+						colNameToValue.put(keyVal, f.get(o));
+					}
+				} else {
+					String keyVal = f.getName();
+					colNameToValue.put(keyVal, f.get(o));
+				}
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				f.setAccessible(false);
+			}
+		}
+		
+		String tableName = o.getClass().getAnnotation(Entity.class).tableName();
+		if (tableName.equals("")){
+			tableName = o.getClass().getName();
+		    int firstChar;
+		    firstChar = tableName.lastIndexOf ('.') + 1;
+		    if ( firstChar > 0 ) {
+		    	tableName = tableName.substring ( firstChar );
+		      }
+			
+		}
+		
+		String pkName = m.getPrimaryKey().getColumnName();
+		
+		if(pkName.equals("")) {
+			pkName = m.getPrimaryKey().getName();
+		}
+		
+		return td.findBySimilarAttributes(o.getClass(), colNameToValue, tableName, pkName);
+	}
+	
 	@Override
 	public int updateRow(Object o) {
 
@@ -340,9 +441,7 @@ public class ServicesImpl implements IServices {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
-
 	
 	@Override
 	public void beginTransaction() {

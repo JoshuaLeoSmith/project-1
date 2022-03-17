@@ -169,4 +169,12 @@ public interface IServices {
 	 * Ends the current transaction.
 	 */
 	void endTransaction();
+
+
+	/**
+	 * Finds rows that have the same data as Object o, excluding null values
+	 * @param o The object that will be the baisis of the search.
+	 * @return A list of objects with similar attributes to Object o;
+	 */
+	ArrayList<Object> findBySimilarAttributes(Object o);	
 }
