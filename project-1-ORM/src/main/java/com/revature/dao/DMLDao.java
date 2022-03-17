@@ -24,15 +24,10 @@ public class DMLDao {
 	
 	public DMLDao() {
 		this.conn = ConnectionUtil.getConnection();
-		try {
-			conn.setAutoCommit(true);
-		} catch (SQLException e) {
-			logger.error("SQLException thrown... cannot access the database...");
-			e.printStackTrace();
-		}
+
 	}
 	
-	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, boolean save) {
+	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName) {
 		
 		try{
 			
@@ -78,24 +73,17 @@ public class DMLDao {
 				id = rs.getInt(pkName);
 			}
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully inserted data with id" + id + "... Committed.");
-			}else {
-				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
-			}
+
 			return id;
 		
 		} catch(SQLException e) {
 			e.printStackTrace();
 			
 			return -1;	
-		}
+		} 
 	}
 	
-	public int remove(String tableName, int id, String pkName, boolean save) {
+	public int remove(String tableName, int id, String pkName) {
 		
 		
 		try{
@@ -109,14 +97,7 @@ public class DMLDao {
 			
 			stmt.execute();
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully removed row with id" + id + "... Committed.");
-			} else {
-				logger.info("Successfully removed row with id" + id + "... NOT committed.");
-			}
+
 			return id;
 			
 		} catch(SQLException e) {
@@ -127,7 +108,7 @@ public class DMLDao {
 	}
 	
 	
-	public ArrayList<Integer> remove(String tableName, String where, String pkName, boolean save) {
+	public ArrayList<Integer> remove(String tableName, String where, String pkName) {
 		
 		
 		try{
@@ -151,14 +132,7 @@ public class DMLDao {
 				}
 			}
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully removed row(s) from " + tableName + " where " + where + "... Committed");
-			} else {
-				logger.info("Successfully removed row(s) from " + tableName + " where " + where + "... NOT Committed");
-			}
+
 			return removed;
 			
 		} catch(SQLException e) {
@@ -441,7 +415,7 @@ public class DMLDao {
 		
 	}
 	
-	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, int id, boolean save) {
+	public int updateRow(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName, int id) {
 		try{
 			
 			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
@@ -470,14 +444,7 @@ public class DMLDao {
 			stmt.execute();
 			
 			
-			if(save) {
-				sql = "COMMIT";
-				stmt = conn.prepareStatement(sql);
-				stmt.execute();
-				logger.info("Successfully inserted data with id" + id + "... Committed.");
-			}else {
-				logger.info("Successfully inserted data with id" + id + "... NOT Committed.");
-			}
+
 			return id;
 		
 		} catch(SQLException e) {
