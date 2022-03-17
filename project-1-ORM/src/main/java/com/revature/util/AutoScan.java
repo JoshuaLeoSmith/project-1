@@ -18,7 +18,7 @@ public class AutoScan {
 		getAllClasses();
 		/*
 		 * MetaModel<?> personM = MetaModel.of(person.class);
-		 * 
+		 *
 		 * TableDao TD = new TableDao(); TD.addForeignKeys(personM);
 		 */
 

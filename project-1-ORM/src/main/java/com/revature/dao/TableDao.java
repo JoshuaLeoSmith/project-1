@@ -1,6 +1,5 @@
 package com.revature.dao;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,13 +16,13 @@ import com.revature.util.GenericField;
 import com.revature.util.MetaModel;
 import com.revature.util.PrimaryKeyField;
 
-public class TableDao {
+public class TableDao implements Dao {
 	// private static Logger logBot = Logger.getLogger(TableDao.class);
 
 
 	private static String managment = ConnectionUtil.getManagement();
 	private static String schema = ConnectionUtil.getSchema();
-	private static Connection conn = ConnectionUtil.getConnection();
+	// private static Connection conn = ConnectionUtil.getConnection();
 
 	/**
 	 * This returns the string to set the column field If the Column name wasn't
