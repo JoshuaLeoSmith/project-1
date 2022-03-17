@@ -6,15 +6,20 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import com.revature.Relation;
 import com.revature.annotations.Column;
 import com.revature.annotations.Entity;
 import com.revature.annotations.Exclude;
 import com.revature.annotations.Id;
 import com.revature.annotations.JoinColumn;
+import com.revature.annotations.ManyToMany;
+import com.revature.annotations.ManyToOne;
+import com.revature.annotations.OneToMany;
 import com.revature.dao.DMLDao;
 import com.revature.dao.TableDao;
 import com.revature.dao.TransactionDao;
 import com.revature.util.MetaModel;
+
 
 
 public class ServicesImpl implements IServices {
@@ -50,10 +55,21 @@ public class ServicesImpl implements IServices {
 			f.setAccessible(true);
 			try {
 				
-				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
-					continue;
+				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class)!= null) {
+					if(f.getAnnotation(ManyToOne.class) != null) {
+						
+					}else {
+						continue;
+					}
+					
+					
 				}
-			
+				
+				
+				if(f.getType()== LocalDate.class && f.get(o) == null){
+					f.set(o, LocalDate.of(1900, 1, 1));
+				}
+				
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
@@ -75,6 +91,7 @@ public class ServicesImpl implements IServices {
 					String keyVal = f.getName();
 					colNameToValue.put(keyVal, f.get(o));
 				}
+				
 				
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
@@ -155,7 +172,8 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public ArrayList<Object> find(Class<?> clazz, String where){
-
+	
+		
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = clazz.getName();
@@ -166,11 +184,33 @@ public class ServicesImpl implements IServices {
 		      }
 			
 		}
-		return td.find(clazz, where, tableName);
+		return td.find(clazz, where, tableName, Relation.ManyToMany);
 	}
-
+	
 	@Override
 	public Object findByPk(Class<?> clazz, int id) {
+		
+		Relation r = Relation.OneToOne;
+		String mappedByTable = "null";
+		String mappedByColumn = "null";
+		for(Field f : clazz.getDeclaredFields()) {
+			if(f.getAnnotation(JoinColumn.class) != null) {
+				mappedByTable = f.getAnnotation(JoinColumn.class).mappedByTable();
+				mappedByColumn = f.getAnnotation(JoinColumn.class).mappedByColumn();
+				if (f.getAnnotation(ManyToOne.class)!= null){
+				
+				r = Relation.ManyToOne;
+				
+				} else if (f.getAnnotation(OneToMany.class) != null) {
+					r=Relation.OneToMany;
+				} else if (f.getAnnotation(ManyToMany.class)!= null) {
+					r=Relation.ManyToMany;
+				} 
+			}
+		}
+
+		
+		
 		MetaModel m = MetaModel.of(clazz);
 		
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
@@ -189,7 +229,7 @@ public class ServicesImpl implements IServices {
 		}
 		
 
-		return td.findByPk(clazz, id, tableName, pkName);
+		return td.findByPk(clazz, id, tableName, pkName, r, mappedByTable, mappedByColumn);
 	}
 
 	@Override
