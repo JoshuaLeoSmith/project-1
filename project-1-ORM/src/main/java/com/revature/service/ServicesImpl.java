@@ -53,15 +53,7 @@ public class ServicesImpl implements IServices {
 
 		for(Field f : fields) {
 			f.setAccessible(true);
-			try {
-<<<<<<< HEAD
-
-				if((f.getAnnotation(Exclude.class) != null) || (f.getAnnotation(JoinColumn.class) != null)) {
-					continue;
-				}
-
-=======
-				
+			try {				
 				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class)!= null) {
 					if(f.getAnnotation(ManyToOne.class) != null) {
 						
@@ -77,7 +69,6 @@ public class ServicesImpl implements IServices {
 					f.set(o, LocalDate.of(1900, 1, 1));
 				}
 				
->>>>>>> ebb2e6a0cca96caea8bf79ab521c4b700cb0a410
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
@@ -99,12 +90,6 @@ public class ServicesImpl implements IServices {
 					String keyVal = f.getName();
 					colNameToValue.put(keyVal, f.get(o));
 				}
-<<<<<<< HEAD
-
-=======
-				
-				
->>>>>>> ebb2e6a0cca96caea8bf79ab521c4b700cb0a410
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
