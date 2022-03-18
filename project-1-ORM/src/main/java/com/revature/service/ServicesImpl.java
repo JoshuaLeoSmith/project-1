@@ -53,8 +53,10 @@ public class ServicesImpl implements IServices {
 
 		for(Field f : fields) {
 			f.setAccessible(true);
+      
 			try {
 				if((f.getAnnotation(Exclude.class) != null) || (f.getAnnotation(JoinColumn.class)!= null)) {
+
 					if(f.getAnnotation(ManyToOne.class) != null) {
 						
 					}else {

@@ -3,6 +3,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
@@ -98,7 +99,7 @@ public class ConfigurationTest {
 		list.add(BasicTable.class);
 
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -113,7 +114,7 @@ public class ConfigurationTest {
 	@Test
 	public void testSetTablesConnectedManyToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -129,7 +130,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesWrongTypeManyToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -145,7 +146,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesWrongTypeManyToOneTables2() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -161,7 +162,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesMismatchRelationsManyToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -177,7 +178,7 @@ public class ConfigurationTest {
 	@Test
 	public void testSetTablesOneToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError(e.getMessage());
 		} catch (SQLException e) {
@@ -193,7 +194,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesWrongTypeOneToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -209,7 +210,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesMismatchRelationsOneToOneTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -225,7 +226,7 @@ public class ConfigurationTest {
 	@Test
 	public void testSetTablesConnectedManyToManyTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -241,7 +242,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesWrongTypeManyToManyTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -257,7 +258,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesWrongTypeManyToManyTables2() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {
@@ -273,7 +274,7 @@ public class ConfigurationTest {
 	@Test(expected = IllegalStateException.class)
 	public void testSetTablesMismatchRelationsManyToManyTables() {
 		try {
-			doNothing().when(mockDao).insert(isA(MetaModel.class));
+			doNothing().when(mockDao).insert(isA(MetaModel.class), anyString());
 		} catch (ClassNotFoundException e) {
 			throw new AssertionError("This should never happen");
 		} catch (SQLException e) {

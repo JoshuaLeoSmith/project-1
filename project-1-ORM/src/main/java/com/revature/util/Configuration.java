@@ -321,7 +321,7 @@ public class Configuration {
 	private void buildTables() throws ClassNotFoundException {
 		metaModels.forEach(m -> {
 			try {
-				tbdao.insert(m);
+				tbdao.insert(m, m.getTableClass().getPackage().getName());
 			} catch (SQLException e) {
 				throw new RuntimeException("Unable to create table " + m.getClassName());
 			} catch (ClassNotFoundException e) {
