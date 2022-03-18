@@ -1,4 +1,5 @@
 package com.revature.dao;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,20 +21,15 @@ import com.revature.UserAccounts;
 import com.revature.annotations.Entity;
 import com.revature.annotations.ManyToOne;
 import com.revature.annotations.OneToMany;
+import com.revature.util.Configuration;
 import com.revature.util.ConnectionUtil;
 
 
 
-public class DMLDao {
+public class DMLDao implements Dao {
 	
 	private static Logger logger = Logger.getLogger(DMLDao.class);
-	public Connection conn;
-	
-	public DMLDao() {
-		this.conn = ConnectionUtil.getConnection();
 
-	}
-	
 	public int insert(LinkedHashMap<String, Object> colNameToValue, String tableName, String pkName) {
 		
 		try{
@@ -74,7 +70,7 @@ public class DMLDao {
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 		
-			System.out.println(sql);
+			//System.out.println(sql);
 			ResultSet rs;
 			
 			int id = -1;
@@ -323,7 +319,14 @@ public class DMLDao {
 					DMLDao tmp = new DMLDao();
 					
 					if(r ==Relation.OneToMany) {
-						ArrayList<Object> pleaseWork =tmp.find(UserAccounts.class, "\"" + mappedByColumn + "\"=" + id, mappedByTable, Relation.OneToOne);
+						Class<?>act = null; 
+						try {
+							    act = Class.forName("com.revature." +mappedByTable);
+							    
+							 } catch (ClassNotFoundException e) {
+							        e.printStackTrace();
+							}
+						ArrayList<Object> pleaseWork =tmp.find(act, "\"" + mappedByColumn + "\"=" + id, mappedByTable, Relation.OneToOne);
 						values[count-2] = pleaseWork;
 					}
 					
@@ -366,7 +369,7 @@ public class DMLDao {
 			}
 			
 			String sql = "SELECT * FROM " + schema + "." + tableName + " WHERE " + setVals;
-			System.out.println(sql);
+			//System.out.println(sql);
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
 			ResultSet rs;
@@ -475,8 +478,8 @@ public class DMLDao {
 			
 			String sql = "UPDATE " + schema + "." + tableName + " SET " + setVals + " WHERE " + pkName + "=" + id;
 			
-			System.out.println();
-			System.out.println(sql);
+			//System.out.println();
+			//System.out.println(sql);
 			
 			PreparedStatement stmt = this.conn.prepareStatement(sql);
 			
