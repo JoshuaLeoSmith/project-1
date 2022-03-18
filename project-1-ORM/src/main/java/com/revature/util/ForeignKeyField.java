@@ -1,14 +1,15 @@
 package com.revature.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.revature.Relation;
 import com.revature.annotations.JoinColumn;
 
 public class ForeignKeyField implements GenericField {
-
-	private Field field; // from java.lang.reflect
+	private Field field;
 	private Relation relation;
 
 	// constructor
@@ -98,5 +99,22 @@ public class ForeignKeyField implements GenericField {
 	@Override
 	public String toString() {
 		return "ForeignKeyField [field=" + field + "]";
+	}
+
+	@Override
+	public String getSubType() {
+		Type type = field.getGenericType();
+		
+		if (type instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType) type;
+			
+			try {
+				return pt.getActualTypeArguments()[0].getTypeName();
+			} catch (IndexOutOfBoundsException e) {
+				return null;
+			}
+		}
+		
+		return null;
 	}
 }

@@ -8,13 +8,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
+
+import com.revature.Relation;
+import com.revature.UserAccounts;
 import com.revature.annotations.Entity;
+import com.revature.annotations.ManyToOne;
+import com.revature.annotations.OneToMany;
 import com.revature.util.ConnectionUtil;
+
 
 
 public class DMLDao {
@@ -31,7 +38,7 @@ public class DMLDao {
 		
 		try{
 			
-			String schema = ConnectionUtil.getSchema();
+			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
 			
 			
 			String values = "(";
@@ -41,8 +48,9 @@ public class DMLDao {
 			for(String s : colNameToValue.keySet()) {
 				
 				Object value = colNameToValue.get(s);
-				if(String.valueOf(value).equals("null")) {
+				if(String.valueOf(value).equals("null") || String.valueOf(value).equals(" ")) {
 					value = " ";
+					
 					
 				}else if(colNameToValue.get(s).getClass()==Character.class) {
 					if(String.valueOf(value).charAt(0) == '\0') {
@@ -145,10 +153,13 @@ public class DMLDao {
 		}
 	}
 	
-	public ArrayList<Object> find(Class<?> clazz, String where, String tableName){
+	public ArrayList<Object> find(Class<?> clazz, String where, String tableName, Relation r){
 		
 		ArrayList<Object> found = new ArrayList<Object>();
 		try{
+			
+			
+			
 			
 			String schema = "\"" + ConnectionUtil.getSchema() + "\"";
 			tableName = "\"" + tableName + "\"";
@@ -234,7 +245,7 @@ public class DMLDao {
 	}
 	
 	
-	public Object findByPk(Class<?> clazz, int id, String tableName, String pkName) {
+	public Object findByPk(Class<?> clazz, int id, String tableName, String pkName, Relation r, String mappedByTable, String mappedByColumn) {
 		
 		try{
 			
@@ -264,10 +275,19 @@ public class DMLDao {
 					int parameterCount = c.getParameterCount();	
 					Parameter[] parameters = c.getParameters();
 					Object[] values = new Object[parameterCount];
-					
 					int count = 1;
 					for(Parameter p : parameters) {
+						
 						String t = p.getParameterizedType().getTypeName();
+						
+						
+						if(r==Relation.OneToMany && t.contains("java.util.ArrayList")) {
+							
+							count++;
+							continue;
+							
+							
+						}
 						if(t.equals("int")) {
 							values[count-1] = rs.getInt(count);
 						}else if(t.equals("class java.lang.String")) {
@@ -299,8 +319,15 @@ public class DMLDao {
 						
 						count++;
 					}
-					Object ro = c.newInstance(values);
 					
+					DMLDao tmp = new DMLDao();
+					
+					if(r ==Relation.OneToMany) {
+						ArrayList<Object> pleaseWork =tmp.find(UserAccounts.class, "\"" + mappedByColumn + "\"=" + id, mappedByTable, Relation.OneToOne);
+						values[count-2] = pleaseWork;
+					}
+					
+					Object ro = c.newInstance(values);
 					return ro;
 				} catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
 					logger.error("Exception thrown...");
