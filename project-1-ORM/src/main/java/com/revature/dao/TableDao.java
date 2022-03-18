@@ -12,7 +12,6 @@ import com.revature.util.ColumnField;
 //import com.revature.inspection.ClassInspector;
 import com.revature.util.ConnectionUtil;
 import com.revature.util.ForeignKeyField;
-import com.revature.util.GenericField;
 import com.revature.util.MetaModel;
 import com.revature.util.PrimaryKeyField;
 
@@ -51,13 +50,13 @@ public class TableDao implements Dao {
 		if ((type == int.class) || (type == Integer.class)) {
 			modifications += " int";
 		} // Test against Integer
-		else if ((type == byte.class) || (type == short.class)) {
+		else if ((type == byte.class) || (type == short.class) || (type == Short.class) || (type == Byte.class)) {
 			modifications += " smallint";
-		} else if (type == long.class) {
+		} else if ((type == long.class) || (type == Long.class)) {
 			modifications += " bigint";
-		} else if ((type == float.class) || (type == double.class) || (type == Double.class)) {
+		} else if ((type == float.class) || (type == double.class) || (type == Double.class) || (type == Float.class)) {
 			modifications += " numeric(" + myField.getPercision() + ", " + myField.getScale() + ")";
-		} else if (type == boolean.class) {
+		} else if ((type == boolean.class) || (type == Boolean.class)) {
 			modifications += " boolean";
 		} else if ((type == char.class) || (type == Character.class)) {
 			modifications += " char(1)";
@@ -81,16 +80,17 @@ public class TableDao implements Dao {
 	private static String getSQLType(PrimaryKeyField myField) {
 		String modifications = "";
 
-		if (myField.getType() == int.class) {
+		if ((myField.getType() == int.class) || (myField.getType() == Integer.class)) {
 			modifications += " int";
 		} // Test against Integer
-		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)) {
+		else if ((myField.getType() == byte.class) || (myField.getType() == short.class)
+				|| (myField.getType() == Byte.class) || (myField.getType() == Short.class)) {
 			modifications += " smallint";
-		} else if (myField.getType() == long.class) {
+		} else if ((myField.getType() == long.class) || (myField.getType() == Long.class)) {
 			modifications += " bigint";
-		} else if (myField.getType() == boolean.class) {
+		} else if ((myField.getType() == boolean.class) || (myField.getType() == Boolean.class)) {
 			modifications += " boolean";
-		} else if (myField.getType() == char.class) {
+		} else if ((myField.getType() == char.class) || (myField.getType() == Character.class)) {
 			modifications += " char(1)";
 		} else if ((myField.getType() == java.util.Date.class) || (myField.getType() == java.sql.Date.class)
 				|| (myField.getType() == java.time.LocalDate.class)) {
@@ -152,7 +152,7 @@ public class TableDao implements Dao {
 	 *
 	 * @author Caleb Kirschbaum
 	 */
-	public void insert(MetaModel<?> allFieldsInTable)
+	public void insert(MetaModel<?> allFieldsInTable, String packageName)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -174,7 +174,7 @@ public class TableDao implements Dao {
 			sql += "create table if not exists";
 		break;
 		case ("update"):
-			alter(allFieldsInTable);
+			alter(allFieldsInTable, packageName);
 		return;
 		default:
 			throw new IllegalArgumentException("Not a valid managment style. Change to validate, create, or update");
@@ -244,7 +244,7 @@ public class TableDao implements Dao {
 		myStatment.close();
 		TableDao.conn.commit();
 		TableDao.conn.setAutoCommit(true);
-		addForeignKeys(allFieldsInTable);
+		addForeignKeys(allFieldsInTable, packageName);
 	}
 
 
@@ -259,7 +259,7 @@ public class TableDao implements Dao {
 	 *
 	 * @author Caleb Kirschbaum
 	 */
-	public void alter(MetaModel<?> allFieldsInTable)
+	public void alter(MetaModel<?> allFieldsInTable, String packageName)
 			throws SQLException, ClassNotFoundException {
 		String name = allFieldsInTable.getTableName();
 		if (name.equals("")) {
@@ -521,7 +521,7 @@ public class TableDao implements Dao {
 		}
 		TableDao.conn.commit();
 		TableDao.conn.setAutoCommit(true);
-		addForeignKeys(allFieldsInTable);
+		addForeignKeys(allFieldsInTable, packageName);
 
 	}
 
@@ -631,16 +631,42 @@ public class TableDao implements Dao {
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
 		}
-		for (GenericField gf : table.getAllFields()) {
-			if (gf.getColumnName().equals(newName) || gf.getName().equals(newName)) {
+		// System.out.println("New Name: " + newName);
+
+		for(ColumnField cf : table.getColumns()) {
+			// System.out.println("Names: " + cf.getColumnName() + " Or " + cf.getName());
+			if (cf.getColumnName().equals(newName) || cf.getName().equals(newName)) {
 				exists = true;
 			}
 		}
+		try {
+			for(ForeignKeyField fk : table.getForeignKeys()) {
+				// System.out.println("Names: " + fk.getColumnName() + " Or " + fk.getName());
+				if (fk.getColumnName().equals(newName) || fk.getName().equals(newName)) {
+					exists = true;
+				}
+			}
+		} catch (Exception e) {
+		}
+		PrimaryKeyField pk= table.getPrimaryKey();
+		// System.out.println("Names: " + pk.getColumnName() + " Or " + pk.getName());
+		if (pk.getColumnName().equals(newName) || pk.getName().equals(newName)) {
+			exists = true;
+		}
+
+
+		/*
+		 * for (GenericField gf : table.getAllFields()) { System.out.println("Names: " +
+		 * gf.getColumnName() + " Or " + gf.getName()); if
+		 * (gf.getColumnName().equals(newName) || gf.getName().equals(newName)) { exists
+		 * = true; } }
+		 */
 		if (!exists) {
 			throw new RuntimeException("The new name must be already in the table.");
 		}
-		String sql = "Alter table \"" + TableDao.schema + "\".\"" + name + "\" rename column \"" + TableDao.schema
-				+ "\".\"" + oldName + "\" to \"" + newName + "\";";
+		String sql = "Alter table \"" + TableDao.schema + "\".\"" + name + "\" rename column \"" + oldName + "\" to \""
+				+ newName + "\";";
+		System.out.println(sql);
 		PreparedStatement myStatment = TableDao.conn.prepareStatement(sql);
 		myStatment.execute();
 		myStatment.close();
@@ -655,7 +681,7 @@ public class TableDao implements Dao {
 	 *
 	 * @author Caleb Kirschbaum
 	 */
-	public void addForeignKeys(MetaModel<?> table) throws SQLException, ClassNotFoundException {
+	public void addForeignKeys(MetaModel<?> table, String packageName) throws SQLException, ClassNotFoundException {
 		String name = table.getTableName();
 		if (name.equals("")) {
 			name = table.getSimpleClassName();
@@ -709,7 +735,7 @@ public class TableDao implements Dao {
 				Class<?> instance;
 				try {
 					// System.out.println("com.revature." + key.getMappedByTable());
-					instance = Class.forName("com.revature." + key.getMappedByTable());
+					instance = Class.forName(packageName + "." + key.getMappedByTable());
 				} catch (ClassNotFoundException e) {
 					throw new ClassNotFoundException("The table defined in the foreign key does not exist");
 				}
@@ -775,11 +801,13 @@ public class TableDao implements Dao {
 				Class<?> instance;
 				try {
 					// System.out.println("com.revature." + key.getMappedByTable());
-					instance = Class.forName("com.revature." + key.getMappedByTable());
+					// String packageName = table.getClass().getPackage().getName();
+					// System.out.println(packageName);
+					instance = Class.forName(packageName + "." + key.getMappedByTable());
 				} catch (ClassNotFoundException e) {
 					throw new ClassNotFoundException("The table defined in the foreign key does not exist");
 				}
-				insert(MetaModel.of(instance));
+				insert(MetaModel.of(instance), packageName);
 				PrimaryKeyField otherKey = MetaModel.of(instance).getPrimaryKey();
 				String otherPKeyName = otherKey.getColumnName();
 				if (otherPKeyName.equals("")) {
