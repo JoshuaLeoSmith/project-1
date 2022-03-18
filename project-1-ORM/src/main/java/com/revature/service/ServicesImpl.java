@@ -1,7 +1,6 @@
 package com.revature.service;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,9 +29,10 @@ public class ServicesImpl implements IServices {
 
 	@Override
 	public int create(Class<?> clazz) {
+		String packageName = clazz.getPackage().getName();
 		try {
 			TableDao td = new TableDao();
-			td.insert(MetaModel.of(clazz));
+			td.insert(MetaModel.of(clazz), packageName);
 			return 1;
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
@@ -54,6 +54,13 @@ public class ServicesImpl implements IServices {
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
+<<<<<<< HEAD
+
+				if((f.getAnnotation(Exclude.class) != null) || (f.getAnnotation(JoinColumn.class) != null)) {
+					continue;
+				}
+
+=======
 				
 				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class)!= null) {
 					if(f.getAnnotation(ManyToOne.class) != null) {
@@ -70,6 +77,7 @@ public class ServicesImpl implements IServices {
 					f.set(o, LocalDate.of(1900, 1, 1));
 				}
 				
+>>>>>>> ebb2e6a0cca96caea8bf79ab521c4b700cb0a410
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
@@ -91,28 +99,32 @@ public class ServicesImpl implements IServices {
 					String keyVal = f.getName();
 					colNameToValue.put(keyVal, f.get(o));
 				}
+<<<<<<< HEAD
+
+=======
 				
 				
+>>>>>>> ebb2e6a0cca96caea8bf79ab521c4b700cb0a410
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
 				f.setAccessible(false);
 			}
 		}
-		
+
 		String tableName = o.getClass().getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = o.getClass().getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
-		
+
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
@@ -129,16 +141,16 @@ public class ServicesImpl implements IServices {
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = clazz.getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
-		
+
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
@@ -154,15 +166,15 @@ public class ServicesImpl implements IServices {
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = clazz.getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
@@ -177,12 +189,12 @@ public class ServicesImpl implements IServices {
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = clazz.getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
 		return td.find(clazz, where, tableName, Relation.ManyToMany);
 	}
@@ -212,22 +224,22 @@ public class ServicesImpl implements IServices {
 		
 		
 		MetaModel m = MetaModel.of(clazz);
-		
+
 		String tableName = clazz.getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = clazz.getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }	
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
 		}
-		
+
 		String pkName = m.getPrimaryKey().getColumnName();
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
-		
+
 
 		return td.findByPk(clazz, id, tableName, pkName, r, mappedByTable, mappedByColumn);
 	}
@@ -235,14 +247,14 @@ public class ServicesImpl implements IServices {
 	@Override
 	public ArrayList<Object> findBySimilarAttributes(Object o){
 		MetaModel m = MetaModel.of(o.getClass());
-		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<String, Object>();
+		LinkedHashMap<String, Object> colNameToValue = new LinkedHashMap<>();
 		int id = -1;
 		for(Field f: o.getClass().getDeclaredFields()) {
 			f.setAccessible(true);
 			try {
-			
-				
-				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
+
+
+				if((f.getAnnotation(Exclude.class) != null) || (f.getAnnotation(JoinColumn.class) != null)) {
 					continue;
 				}
 				Class fieldType = null;
@@ -253,20 +265,14 @@ public class ServicesImpl implements IServices {
 				}
 				Object fieldVal = f.get(o);
 
-				
-				if(f.get(o) == null) {
+
+				if((f.get(o) == null) || (fieldType.equals(Integer.class) && (((int)fieldVal) == 0))) {
 					continue;
-				} else if(fieldType.equals(Integer.class) && ((int)fieldVal) == 0){
+				} else if((fieldType.equals(Short.class) && (((short)fieldVal) == 0)) || (fieldType.equals(Long.class) && (((long)fieldVal) == 0))){
 					continue;
-				}else if(fieldType.equals(Short.class) && ((short)fieldVal) == 0){
+				} else if((fieldType.equals(Byte.class) && (((byte)fieldVal) == 0)) || (fieldType.equals(Float.class) && (((float)fieldVal) == 0))){
 					continue;
-				}else if(fieldType.equals(Long.class) && ((long)fieldVal) == 0){
-					continue;
-				}else if(fieldType.equals(Byte.class) && ((byte)fieldVal) == 0){
-					continue;
-				}else if(fieldType.equals(Float.class) && ((float)fieldVal) == 0){
-					continue;
-				}else if(fieldType.equals(Double.class) && ((double)fieldVal) == 0.0){
+				} else if(fieldType.equals(Double.class) && (((double)fieldVal) == 0.0)){
 					continue;
 				}else if(fieldType.equals(Boolean.class)){
 					continue;
@@ -281,9 +287,9 @@ public class ServicesImpl implements IServices {
 				}else if(fieldType.equals(Character.class) && fieldVal.equals('\0')){
 					continue;
 				}
-				
-				
-				
+
+
+
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
@@ -313,27 +319,27 @@ public class ServicesImpl implements IServices {
 				f.setAccessible(false);
 			}
 		}
-		
+
 		String tableName = o.getClass().getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = o.getClass().getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
-		
+
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
-		
+
 		return td.findBySimilarAttributes(o.getClass(), colNameToValue, tableName, pkName);
 	}
-	
+
 	@Override
 	public int updateRow(Object o) {
 
@@ -346,12 +352,12 @@ public class ServicesImpl implements IServices {
 		for(Field f : fields) {
 			f.setAccessible(true);
 			try {
-				
-				if(f.getAnnotation(Exclude.class) != null || f.getAnnotation(JoinColumn.class) != null) {
+
+				if((f.getAnnotation(Exclude.class) != null) || (f.getAnnotation(JoinColumn.class) != null)) {
 					continue;
 				}
 				Object value = f.get(o);
-			
+
 				if (f.getAnnotation(Column.class) != null) {
 					String keyVal = f.getAnnotation(Column.class).columnName();
 					if (keyVal.equals("")) {
@@ -374,7 +380,7 @@ public class ServicesImpl implements IServices {
 					String keyVal = f.getName();
 					colNameToValue.put(keyVal, value);
 				}
-				
+
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
@@ -384,22 +390,22 @@ public class ServicesImpl implements IServices {
 		String tableName = o.getClass().getAnnotation(Entity.class).tableName();
 		if (tableName.equals("")){
 			tableName = o.getClass().getName();
-		    int firstChar;
-		    firstChar = tableName.lastIndexOf ('.') + 1;
-		    if ( firstChar > 0 ) {
-		    	tableName = tableName.substring ( firstChar );
-		      }
-			
+			int firstChar;
+			firstChar = tableName.lastIndexOf ('.') + 1;
+			if ( firstChar > 0 ) {
+				tableName = tableName.substring ( firstChar );
+			}
+
 		}
-		
+
 		String pkName = m.getPrimaryKey().getColumnName();
-		
+
 		if(pkName.equals("")) {
 			pkName = m.getPrimaryKey().getName();
 		}
 
 		return td.updateRow(colNameToValue, tableName, pkName, id);
-		
+
 	}
 
 
@@ -407,9 +413,9 @@ public class ServicesImpl implements IServices {
 	public void alter(Class<?> clazz) {
 
 		MetaModel m = MetaModel.of(clazz);
-
+		String packageName = clazz.getPackage().getName();
 		try {
-			tableDao.alter(m);
+			tableDao.alter(m, packageName);
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
