@@ -101,4 +101,8 @@ public class PrimaryKeyField implements GenericField {
 		
 		return null;
 	}
+	
+	public Field getField() {
+		return field;
+	}
 }

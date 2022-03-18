@@ -18,6 +18,13 @@ import com.revature.Relation;
 import com.revature.annotations.Column;
 import com.revature.dao.TableDao;
 
+/**
+ * The configuration for storing all information pertaining to a user's database
+ * to be used by the Api.
+ * 
+ * @author Nathaniel Blichfeldt
+ *
+ */
 public class Configuration {
 	private static Logger logger = Logger.getLogger(Configuration.class);
 	private List<MetaModel<Class<?>>> metaModels;
@@ -29,16 +36,33 @@ public class Configuration {
 	private String password;
 	private Management type;
 
+	/**
+	 * Constructor for Configuration (default file location)
+	 * 
+	 * @throws FileNotFoundException	if the file is not found in the specified location
+	 */
 	public Configuration() throws FileNotFoundException {
 		this("./src/main/resources/");
 	}
 
-	// for testing only
+	
+	/**
+	 * Constructor for Configuration (testing only)
+	 * 
+	 * @param tbdao	the TableDao 
+	 * @throws FileNotFoundException	if the file is not found in the specified location
+	 */
 	public Configuration(TableDao tbdao) throws FileNotFoundException {
 		this("./src/main/resources/");
 		this.tbdao = tbdao;
 	}
 
+	/**
+	 * Constructor for Configuration (custom file path)
+	 * 
+	 * @param pathname
+	 * @throws FileNotFoundException	if the file is not found in the specified location
+	 */
 	public Configuration(String pathname) throws FileNotFoundException {
 		super();
 		File config = new File(pathname + "config.properties");
@@ -86,6 +110,15 @@ public class Configuration {
 		tbdao = new TableDao();
 	}
 
+	/**
+	 * Constructor for Configuration
+	 * 
+	 * @param url		the database end point
+	 * @param schema	the database schema
+	 * @param username	the database username
+	 * @param password	the database password
+	 * @param type		the Api management type
+	 */
 	public Configuration(String url, String schema, String username, String password, Management type) {
 		super();
 		List<String> missing = new ArrayList<>();
@@ -126,12 +159,22 @@ public class Configuration {
 		tbdao = new TableDao();
 	}
 	
+	/**
+	 * Gets the current list of table names that have been added to the configuration
+	 * 
+	 * @return	list of table names
+	 */
 	public List<String> getTables() {
 		return metaModels.stream()
 				.map(m -> m.getClassName())
 				.collect(Collectors.toList());
 	}
 	
+	/**
+	 * add a single class to the configuration so it can be made into a table
+	 * 
+	 * @param clazz	class to be made into a table on the database
+	 */
 	public void addTable(Class<?> clazz) {
 		MetaModel<Class<?>> meta = MetaModel.of(clazz);
 		try {
@@ -150,16 +193,32 @@ public class Configuration {
 		metaModels.add(meta);
 	}
 
+	/**
+	 * Adds a list of classes to the configuration to be made into tables
+	 * 
+	 * @param clazzes	classes to be made into tables on the database
+	 */
 	public void addTables(Collection<Class<?>> clazzes) {
 		for (Class<?> clazz : clazzes)
 			addTable(clazz);
 	}
 
+	/**
+	 * Adds any number of classes to the configuration to be made into tables
+	 * 
+	 * @param clazzes	classes to be made into tables on the database
+	 */
 	public void addTables(Class<?>... clazzes) {
 		for (Class<?> clazz : clazzes)
 			addTable(clazz);
 	}
 
+	/**
+	 * Checks if foreign key relations between tables are set up correctly across all user-defined classes.
+	 * 
+	 * @throws IllegalStateException	any time when the foreign key relationship is incorrect.
+	 */
+	@SuppressWarnings("incomplete-switch")
 	public void validate() {
 		for (MetaModel<?> meta : metaModels) {
 			List<ForeignKeyField> fkeys;
@@ -175,73 +234,71 @@ public class Configuration {
 				MetaModel<Class<?>> meta2 = getModelByName(column.getMappedByTable());
 
 				if (meta2 != null) {
-					try {
-						GenericField column2 = meta2.getFieldByName(column.getMappedByColumn());
-						
-						switch (column.getRelation()) {
-						case OneToOne:
-							if (!column.getType().equals(meta2.getTableClass())) {
-								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
-							} else if (!column2.getType().equals(meta.getTableClass())) {
-								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
-							}
-							
-							if (column2.getRelation() != Relation.OneToOne) {
-								throw new IllegalStateException(
-										"Miss-matching mappings, " + column.getName() + " = OneToOne, "
-												+ column2.getName() + " = " + column2.getRelation().toString());
-							}
-							break;
-						case ManyToOne:
-							if (!column.getType().equals(meta2.getTableClass()))
-								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
-							
-							String column2Component = column2.getSubType();
-							if (column2Component == null)
-								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection or an array");
-								
-							if (!column2Component.equals(meta.getSimpleClassName()))
-								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
-							
-							if (column2.getRelation() != Relation.OneToMany) {
-								throw new IllegalStateException(
-										"Miss-matching mappings, " + column.getName() + " = ManyToOne, "
-												+ column2.getName() + " = " + column2.getRelation().toString());
-							}
-							break;
-						case ManyToMany:
-							String columnComponent = column.getSubType();
-							if (columnComponent == null)
-								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " must be a Collection or an array");
-							
-							if (!columnComponent.equals(meta2.getSimpleClassName()))
-								throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName() + " needs to be of type " + meta2.getSimpleClassName());
-							
-							column2Component = column2.getSubType();
-							if (column2Component == null)
-								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection or an array");
-							
-							if (!column2Component.equals(meta.getSimpleClassName()))
-								throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName() + " needs to be of type " + meta.getSimpleClassName());
-						
-						if (column2.getRelation() != Relation.ManyToMany) {
-							throw new IllegalStateException(
-									"Miss-matching mappings, " + column.getName() + " = ManyToOne, "
-											+ column2.getName() + " = " + column2.getRelation().toString());
+					
+					GenericField column2 = meta2.getFieldByName(column.getMappedByColumn());
+
+					switch (column.getRelation()) {
+					case OneToOne:
+						if (!column.getType().equals(meta2.getTableClass()))
+							throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName()
+									+ " needs to be of type " + meta2.getTableClass() + ", found: " + column.getType());
+						if (!column2.getType().equals(meta.getTableClass()))
+							throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName()
+									+ " needs to be of type " + meta.getTableClass() + ", found: " + column2.getType());
+
+						if (column2.getRelation() != Relation.OneToOne) {
+							throw new IllegalStateException("Miss-matching mappings, " + column.getName()
+									+ " = OneToOne, " + column2.getName() + " = " + column2.getRelation().toString());
 						}
 						break;
-						case OneToMany:
-						default:
-							throw new IllegalStateException("Invalid relation " + column.getRelation() + " set to foreign key " + column.getName());
-						}
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-						throw new IllegalStateException(e.getMessage());
-					} catch (RuntimeException e) {
-						throw new IllegalStateException("Unable to find field " + column.getMappedByColumn()
-								+ " in class " + column.getMappedByTable());
-					}
+					case ManyToOne:
+						if (!column.getType().equals(meta2.getTableClass()))
+							throw new IllegalStateException(
+									meta.getSimpleClassName() + "." + column.getName() + " needs to be of type "
+											+ meta2.getSimpleClassName() + ", found: " + column.getType());
 
+						String column2Component = column2.getSubType();
+						if (column2Component == null)
+							throw new IllegalStateException(
+									meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection");
+
+						if (!column2Component.equals(meta.getSimpleClassName()))
+							throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName()
+									+ " needs to be of type java.util.Collection<" + meta.getSimpleClassName()
+									+ ">, found: " + column2.getField().getGenericType());
+
+						if (column2.getRelation() != Relation.OneToMany) {
+							throw new IllegalStateException("Miss-matching mappings, " + column.getName()
+									+ " = ManyToOne, " + column2.getName() + " = " + column2.getRelation().toString());
+						}
+						break;
+					case ManyToMany:
+						String columnComponent = column.getSubType();
+						if (columnComponent == null)
+							throw new IllegalStateException(
+									meta.getSimpleClassName() + "." + column.getName() + " must be a Collection");
+
+						if (!columnComponent.equals(meta2.getSimpleClassName()))
+							throw new IllegalStateException(meta.getSimpleClassName() + "." + column.getName()
+									+ " needs to be of type java.util.Collection<" + meta2.getSimpleClassName()
+									+ ">, found: " + column.getField().getGenericType());
+
+						column2Component = column2.getSubType();
+						if (column2Component == null)
+							throw new IllegalStateException(
+									meta2.getSimpleClassName() + "." + column2.getName() + " must be a Collection");
+
+						if (!column2Component.equals(meta.getSimpleClassName()))
+							throw new IllegalStateException(meta2.getSimpleClassName() + "." + column2.getName()
+									+ " needs to be of type java.util.Collection<" + meta.getSimpleClassName()
+									+ ">, found: " + column2.getField().getGenericType());
+
+						if (column2.getRelation() != Relation.ManyToMany) {
+							throw new IllegalStateException("Miss-matching mappings, " + column.getName()
+									+ " = ManyToOne, " + column2.getName() + " = " + column2.getRelation().toString());
+						}
+						break;
+					}
 				} else {
 					throw new IllegalStateException("Unable to find class " + column.getMappedByTable());
 				}
@@ -255,6 +312,12 @@ public class Configuration {
 		}
 	}
 
+	/**
+	 * creates all of the tables for the database based on the user-defined classes, if needed.
+	 * 
+	 * @throws ClassNotFoundException persisted exception from the TableDao.insert() method
+	 * @see	TableDao
+	 */
 	private void buildTables() throws ClassNotFoundException {
 		metaModels.forEach(m -> {
 			try {
@@ -267,10 +330,18 @@ public class Configuration {
 		});
 	}
 
+	/**
+	 * 
+	 */
 	public void reset() {
 		metaModels.clear();
 	}
 
+	/**
+	 * Gets the full current end point (url + schema) for connecting to the database
+	 * 
+	 * @return
+	 */
 	public String getFullUrl() {
 		StringBuilder str = new StringBuilder();
 
@@ -281,26 +352,57 @@ public class Configuration {
 		return str.toString();
 	}
 
+	/**
+	 * Gets the current end point for connecting to the database
+	 * 
+	 * @return	the database end point
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Gets the current schema in which the api will be operating on in the database
+	 * 
+	 * @return	the database schema
+	 */
 	public String getSchema() {
 		return schema;
 	}
 
+	/**
+	 * Gets the current username for logging into the database
+	 * 
+	 * @return	the database username
+	 */
 	public String getUsername() {
 		return username;
 	}
 
+	/**
+	 * Gets the current password for logging into the database
+	 * 
+	 * @return	the database password
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	/**
+	 * Gets the current management of the Api.
+	 * 
+	 * @return	the Management to be used by the Api
+	 */
 	public Management getType() {
 		return type;
 	}
 
+	/**
+	 * Finds a MedaModel with the provided class name.
+	 * 
+	 * @param name	the class name
+	 * @return	a MetaModel with the given name if it exists, Otherwise null.
+	 */
 	public MetaModel<Class<?>> getModelByName(String name) {
 		Optional<MetaModel<Class<?>>> meta = metaModels.stream()
 				.filter(m -> {
@@ -310,9 +412,15 @@ public class Configuration {
 		return meta.isPresent() ? meta.get() : null;
 	}
 
+	/**
+	 * Finds a MetaModel with the provided class.
+	 * 
+	 * @param clazz	the class
+	 * @return	a MetaModel of the provide class if it exists, Otherwise null.
+	 */
 	public MetaModel<Class<?>> getModelByClass(Class<?> clazz) {
 		Optional<MetaModel<Class<?>>> meta = metaModels.stream()
-				.filter(m -> m.getClass().equals(clazz))
+				.filter(m -> m.getClassName().equals(clazz.getName()))
 				.findFirst();
 
 		return meta.isPresent() ? meta.get() : null;

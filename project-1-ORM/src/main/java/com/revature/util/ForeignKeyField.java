@@ -56,6 +56,10 @@ public class ForeignKeyField implements GenericField {
 								// are crafting a way in which we can set up a way to determine the RDBMS type
 								// for the column
 	}
+	
+	public Field getField() {
+		return field;
+	}
 
 	// getColumnName() --> extract the column name that the user sets for that field
 	public String getColumnName() {
