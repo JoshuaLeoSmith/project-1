@@ -20,4 +20,5 @@ public interface GenericField {
 	String getColumnName();
 	Relation getRelation();
 	String getSubType();
+	Field getField();
 }
